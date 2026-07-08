@@ -30,7 +30,29 @@ Cualquiera de estas opciones sirve, subiendo los 3 archivos tal cual:
 
 Una vez publicado, entrá desde el celular con Chrome (Android) o Safari (iPhone) y usá "Agregar a pantalla de inicio" — o esperá el cartel de instalación que aparece solo.
 
+## Datos en vivo (fixture y resultados)
+
+`worker.js` es un Cloudflare Worker que scrapea la página de Promiedos del club
+y devuelve JSON. Sin esto, la app funciona igual pero con los resultados fijos
+que están en el código.
+
+1. Entrá a [dash.cloudflare.com](https://dash.cloudflare.com) (cuenta gratis, sin tarjeta)
+2. Workers & Pages → Create → Create Worker
+3. Pegá todo el contenido de `worker.js` reemplazando el código de ejemplo
+4. Deploy — te da una URL tipo `https://ferro-fixture.tu-nombre.workers.dev`
+5. Probala en el navegador entrando a esa URL + `/fixture` (debería devolver JSON)
+6. En `index.html`, buscá la línea `const WORKER_URL = "..."` y poné tu URL ahí
+7. Volvé a subir `index.html` a donde tengas publicada la PWA
+
+El Worker cachea la respuesta 30 minutos de su lado, así que no golpea Promiedos
+en cada visita. Si en algún momento Promiedos cambia el diseño de su página,
+el scraper puede dejar de funcionar — en ese caso la app simplemente vuelve a
+mostrar los datos fijos (no se rompe nada, solo deja de actualizarse sola).
+
+
+
 ## Notas
 
 - El escudo y las fotos del estadio se cargan desde Wikimedia Commons; necesitás conexión la primera vez para que el service worker las guarde en caché.
-- Los datos de plantel y resultados están fijos en el código (no se actualizan solos). Si querés que se actualicen automáticamente, hay que conectar una fuente de datos en vivo.
+- Sin desplegar el Worker, los datos de resultados quedan fijos en el código. Con el Worker desplegado, el fixture y los resultados se actualizan solos.
+- El plantel (nombres, edades) sí queda fijo — no vale la pena scrapearlo tan seguido.

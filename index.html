@@ -120,6 +120,9 @@
   .standing{background:var(--verde-deep); border:1px solid var(--verde-nilo); padding:1rem 1.4rem; margin-bottom:1.6rem;
     display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;}
   .standing .pos{color:var(--brass);}
+  .proximo{border:1px solid var(--brass); background:rgba(201,160,74,0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
+  .proximo .tag{font-size:0.72rem; color:var(--brass); text-transform:uppercase;}
+  .proximo .match{font-family:'Big Shoulders Display', sans-serif; font-size:1.3rem; margin-top:0.3rem;}
   .rrow{display:flex; align-items:center; gap:1rem; padding:0.7rem 0.5rem; border-bottom:1px solid rgba(241,236,221,0.1);}
   .rrow:hover{background:rgba(46,158,99,0.06);}
   .rrow .date{font-size:0.75rem; color:rgba(241,236,221,0.5); width:48px;}
@@ -237,8 +240,9 @@
       <span>Posición actual en su zona</span>
       <span class="pos mono">1° puesto · 37 pts (tras la fecha 19)</span>
     </div>
+    <div id="proximo-wrap"></div>
     <div id="results"></div>
-    <p class="mono" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Fuente: LA NACION / Canchallena, fechas 12 a 19 del torneo.</p>
+    <p class="mono" id="fuente-datos" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Fuente: LA NACION / Canchallena, fechas 12 a 19 del torneo (datos fijos).</p>
   </section>
 
   <section id="tab-visitanos">
@@ -348,7 +352,10 @@ const SQUAD = [
 
 const POS_LABELS = {todos:"Todos", Arq:"Arqueros", Def:"Defensores", Med:"Mediocampo", Del:"Delanteros"};
 
-const RESULTS = [
+// URL de tu Worker de Cloudflare (ver worker.js). Reemplazá esto por la tuya después de desplegarlo.
+const WORKER_URL = "https://ferro-fixture.TU-SUBDOMINIO.workers.dev/fixture";
+
+const RESULTS_FALLBACK = [
   {fecha:19, date:"05/07", rival:"San Telmo", cond:"L", score:"2-1", scorers:"Parisi, Hoyos"},
   {fecha:18, date:"14/06", rival:"Acassuso", cond:"L", score:"2-1", scorers:"Kabalín, Parisi"},
   {fecha:17, date:"07/06", rival:"Chaco For Ever", cond:"V", score:"2-1", scorers:"Hoyos, Canto"},
@@ -356,6 +363,9 @@ const RESULTS = [
   {fecha:13, date:"11/05", rival:"Defensores de Belgrano", cond:"L", score:"2-1", scorers:"González, Parisi"},
   {fecha:12, date:"03/05", rival:"Ciudad de Bolívar", cond:"V", score:"4-2", scorers:"Dening x2, Canto"},
 ];
+
+let RESULTS = RESULTS_FALLBACK;
+let PROXIMOS = [];
 
 // ---------- RENDER ----------
 function renderTimeline(){
@@ -428,6 +438,51 @@ function renderResults(){
     </div>`).join('');
 }
 
+function renderProximos(){
+  const wrap = document.getElementById('proximo-wrap');
+  if (!PROXIMOS.length) { wrap.innerHTML = ''; return; }
+  const p = PROXIMOS[0];
+  wrap.innerHTML = `
+    <div class="proximo">
+      <div class="tag mono">Próximo partido</div>
+      <div class="match">${p.condicion === 'L' ? 'Ferro' : p.rival} vs ${p.condicion === 'L' ? p.rival : 'Ferro'}</div>
+      <div class="mono" style="font-size:0.8rem; opacity:0.8; margin-top:0.2rem;">${p.dia} · ${p.dato || 'hora a confirmar'}</div>
+    </div>`;
+}
+
+// Trae fixture y resultados en vivo desde el Worker de Cloudflare (worker.js).
+// Si falla (sin conexión, Worker no desplegado, etc.) se queda con los datos fijos de respaldo.
+async function fetchLiveData(){
+  const fuenteEl = document.getElementById('fuente-datos');
+  try {
+    const resp = await fetch(WORKER_URL, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('respuesta no OK');
+    const data = await resp.json();
+
+    if (data.resultados && data.resultados.length) {
+      RESULTS = data.resultados.map((r, i) => ({
+        fecha: data.resultados.length - i,
+        date: r.dia,
+        rival: r.rival,
+        cond: r.condicion,
+        score: r.dato,
+        scorers: '',
+      }));
+      renderResults();
+    }
+    if (data.proximos && data.proximos.length) {
+      PROXIMOS = data.proximos;
+      renderProximos();
+    }
+    if (fuenteEl) {
+      const actualizado = data.actualizado ? new Date(data.actualizado).toLocaleString('es-AR') : '';
+      fuenteEl.textContent = `Datos en vivo desde Promiedos · actualizado ${actualizado}`;
+    }
+  } catch (err) {
+    console.warn('No se pudo traer el fixture en vivo, se usan los datos fijos:', err);
+  }
+}
+
 // ---------- TABS ----------
 document.querySelectorAll('.tabbtn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -445,6 +500,8 @@ renderHistoricSquads();
 renderFilters();
 renderSquad();
 renderResults();
+renderProximos();
+fetchLiveData();
 
 // ---------- PWA: service worker + install prompt ----------
 if ('serviceWorker' in navigator) {
