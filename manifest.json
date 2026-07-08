@@ -1,0 +1,20 @@
+{
+  "name": "Ferro Carril Oeste",
+  "short_name": "Ferro",
+  "description": "Sitio informativo no oficial del Club Ferro Carril Oeste: historia, estadio, plantel y resultados.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1f16",
+  "theme_color": "#0d1f16",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

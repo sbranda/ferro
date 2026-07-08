@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ferro Carril Oeste</title>
+<meta name="description" content="Sitio informativo no oficial del Club Ferro Carril Oeste: historia, estadio, plantel y resultados.">
+<meta name="theme-color" content="#0d1f16">
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ferro">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0d1f16; --bg-alt:#122d1f; --paper:#f1ecdd;
+    --verde-nilo:#1f7a4d; --verde-bright:#2e9e63; --verde-deep:#123924;
+    --rust:#9c4a2b; --brass:#c9a04a; --line:rgba(241,236,221,0.16);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--bg); color:var(--paper); font-family:'Source Serif 4', Georgia, serif; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.disp{font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase; letter-spacing:0.02em;}
+  .mono{font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em;}
+  button{cursor:pointer; border:none; font-family:'IBM Plex Mono', monospace; background:transparent; color:inherit;}
+  :focus-visible{outline:3px solid var(--brass); outline-offset:2px;}
+  p{opacity:0.92;}
+
+  header.hero{
+    min-height:78vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:3rem 1.25rem; position:relative;
+    background-image:linear-gradient(rgba(13,31,22,0.72), rgba(13,31,22,0.92)),
+      url('https://commons.wikimedia.org/wiki/Special:FilePath/Estadioferrocarriloeste.jpg');
+    background-size:cover; background-position:center;
+  }
+  header.hero img.crest{width:120px; height:120px; margin-bottom:1.4rem; filter:drop-shadow(0 6px 18px rgba(0,0,0,0.5));}
+  .station-sign{
+    background:var(--verde-nilo); border:3px solid var(--paper);
+    box-shadow:0 0 0 6px var(--verde-deep), 0 20px 50px rgba(0,0,0,0.4);
+    padding:0.8rem 2rem; display:inline-block;
+  }
+  .station-sign span{font-size:clamp(2rem,6vw,4rem); font-weight:900; color:var(--paper); display:block; line-height:0.95;}
+  .hero-sub{margin-top:1.5rem; max-width:36ch; font-size:clamp(1rem,2vw,1.2rem);}
+  .hero-meta{margin-top:0.5rem; color:var(--verde-bright); font-size:0.9rem;}
+
+  nav.tabs{
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:0.3rem;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:0.6rem 1rem; position:sticky; top:0; background:var(--bg); z-index:10;
+  }
+  nav.tabs img{width:34px; height:34px; margin-right:0.6rem;}
+  .tabbtn{padding:0.5rem 0.9rem; font-size:0.85rem; text-transform:uppercase; border-bottom:2px solid transparent; transition:color 0.2s, border-color 0.2s;}
+  .tabbtn:hover{color:var(--verde-bright);}
+  .tabbtn.active{color:var(--verde-bright); border-bottom-color:var(--verde-bright);}
+
+  main{max-width:900px; margin:0 auto; padding:3.5rem 1.5rem;}
+  section{display:none;}
+  section.active{display:block;}
+  .eyebrow{color:var(--verde-bright); font-size:0.8rem; text-transform:uppercase; margin-bottom:0.6rem;}
+  h2{font-size:clamp(1.7rem,4vw,2.4rem); margin:0 0 1.2rem;}
+
+  /* timeline */
+  .timeline{position:relative; padding-left:2.2rem; margin-top:2rem;}
+  .timeline::before{content:""; position:absolute; left:0.5rem; top:0.3rem; bottom:0.3rem; width:6px;
+    background:repeating-linear-gradient(180deg, var(--brass) 0 4px, transparent 4px 16px);}
+  .stop{position:relative; padding-bottom:1.4rem;}
+  .dot{position:absolute; left:-2.2rem; top:0.35rem; width:1.2rem; height:1.2rem; border-radius:50%; background:var(--verde-nilo); border:3px solid var(--paper);}
+  .stop.open .dot{background:var(--verde-bright);}
+  .stopbtn{width:100%; text-align:left; padding:0.5rem 0.7rem;}
+  .stopbtn:hover{background:rgba(46,158,99,0.08);}
+  .stopbtn .yr{color:var(--brass); font-size:0.95rem; display:block;}
+  .stopbtn .ti{font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase; font-size:1.25rem;}
+  .stop .body{display:none; padding:0 0.7rem; margin:0.4rem 0 0;}
+  .stop.open .body{display:block;}
+
+  /* colors */
+  .colors{display:flex; gap:1rem; flex-wrap:wrap; margin:1.8rem 0;}
+  .swatch{flex:1 1 150px; border:1px solid var(--line); padding:1rem; text-align:center;}
+  .swatch .chip{height:50px; margin-bottom:0.6rem;}
+  .swatch .yr{font-size:0.78rem; color:var(--verde-bright);}
+  .swatch p{font-size:0.85rem; margin:0.3rem 0 0; opacity:0.75;}
+  .nicknames{display:flex; flex-wrap:wrap; gap:0.6rem; margin-top:1rem;}
+  .nickname{font-size:0.85rem; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.35rem 0.8rem;}
+
+  /* stadium */
+  .gallery{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:0.8rem; margin:1.6rem 0;}
+  .gallery img{width:100%; height:170px; object-fit:cover; border:1px solid var(--line); filter:saturate(0.9);}
+  .stat-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1rem;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:1.4rem 0; margin:1.6rem 0;}
+  .stat-num{font-family:'Big Shoulders Display', sans-serif; font-size:2.1rem; font-weight:700;}
+  .stat-label{font-size:0.72rem; color:var(--verde-bright);}
+
+  /* historic squads */
+  .squadcard{border:1px solid var(--line); margin-bottom:0.6rem;}
+  .squadbtn{width:100%; padding:1rem 1.2rem; display:flex; justify-content:space-between; align-items:center; gap:1rem;}
+  .squadbtn:hover{background:rgba(46,158,99,0.08);}
+  .squadbtn .yr{color:var(--brass); font-size:0.9rem; display:block;}
+  .squadbtn .ti{font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase; font-size:1.25rem;}
+  .squadbtn .plus{color:var(--verde-bright); font-size:1.2rem;}
+  .squadbody{display:none; padding:0 1.2rem 1.2rem;}
+  .squadcard.open .squadbody{display:block;}
+  .line-label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase;}
+
+  /* squad grid */
+  .filters{display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.6rem;}
+  .filterbtn{padding:0.5rem 1rem; font-size:0.8rem; border:1px solid var(--verde-nilo); color:var(--verde-bright);}
+  .filterbtn.active{background:var(--verde-nilo); color:var(--paper);}
+  .squadgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:0.7rem;}
+  .player{border:1px solid var(--line); padding:0.9rem;}
+  .player .name{font-weight:600;}
+  .player .detail{font-size:0.78rem; color:var(--verde-bright); margin-top:0.2rem;}
+
+  /* results */
+  .standing{background:var(--verde-deep); border:1px solid var(--verde-nilo); padding:1rem 1.4rem; margin-bottom:1.6rem;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;}
+  .standing .pos{color:var(--brass);}
+  .rrow{display:flex; align-items:center; gap:1rem; padding:0.7rem 0.5rem; border-bottom:1px solid rgba(241,236,221,0.1);}
+  .rrow:hover{background:rgba(46,158,99,0.06);}
+  .rrow .date{font-size:0.75rem; color:rgba(241,236,221,0.5); width:48px;}
+  .rrow .cond{font-size:0.7rem; color:var(--brass); width:18px;}
+  .rrow .rival{flex:1;}
+  .rrow .score{background:var(--verde-bright); color:var(--bg); padding:0.2rem 0.6rem; font-weight:600; min-width:44px; text-align:center;}
+  .rrow .scorers{font-size:0.8rem; opacity:0.65; flex:1 1 160px;}
+
+  .visit-card{background:var(--verde-deep); border:1px solid var(--verde-nilo); padding:1.8rem;}
+  .visit-card .label{color:var(--brass); font-size:0.78rem; text-transform:uppercase; margin-top:1rem;}
+
+  footer{text-align:center; padding:2.5rem 1.5rem 3.5rem; opacity:0.5; font-size:0.75rem;}
+
+  .install-toast{
+    position:fixed; bottom:1rem; left:50%; transform:translateX(-50%);
+    background:var(--verde-nilo); color:var(--paper); padding:0.8rem 1.2rem;
+    border:1px solid var(--paper); display:none; align-items:center; gap:0.8rem; z-index:50; font-size:0.85rem;
+  }
+  .install-toast.show{display:flex;}
+  .install-toast button{background:var(--paper); color:var(--verde-deep); padding:0.4rem 0.8rem; font-weight:600;}
+
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <img class="crest" src="https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg" alt="Escudo del Club Ferro Carril Oeste">
+  <div class="station-sign"><span>Ferro Carril<br>Oeste</span></div>
+  <p class="hero-sub">El corazón verde de Caballito. Un club de ferroviarios convertido en escuela deportiva.</p>
+  <p class="hero-meta mono">FUNDADO 28 · 07 · 1904</p>
+</header>
+
+<nav class="tabs" id="tabs">
+  <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg" alt="Escudo">
+  <button class="tabbtn mono active" data-tab="historia">Historia</button>
+  <button class="tabbtn mono" data-tab="identidad">Identidad</button>
+  <button class="tabbtn mono" data-tab="estadio">Estadio</button>
+  <button class="tabbtn mono" data-tab="planteles">Planteles históricos</button>
+  <button class="tabbtn mono" data-tab="plantel">Plantel actual</button>
+  <button class="tabbtn mono" data-tab="resultados">Resultados</button>
+  <button class="tabbtn mono" data-tab="visitanos">Visitanos</button>
+</nav>
+
+<main>
+
+  <section id="tab-historia" class="active">
+    <div class="eyebrow mono">Línea de tiempo</div>
+    <h2 class="disp">De la oficina de cargas al templo de madera</h2>
+    <p>Tocá cada estación para ver su historia.</p>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section id="tab-identidad">
+    <div class="eyebrow mono">Identidad</div>
+    <h2 class="disp">Un verde con historia propia</h2>
+    <p>El color del club cambió tres veces antes de fijarse definitivamente.</p>
+    <div class="colors">
+      <div class="swatch">
+        <div class="chip" style="background:#e7e1d2; border:1px solid #b23b2e;"></div>
+        <span class="yr mono">1904</span>
+        <p>Blusa blanca con escudo rojo, colores de Inglaterra.</p>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:linear-gradient(90deg,#6d1b2e 50%, #8fb8d8 50%);"></div>
+        <span class="yr mono">1907</span>
+        <p>Camiseta borravino con mangas celestes, estilo Aston Villa.</p>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#1f7a4d;"></div>
+        <span class="yr mono">1910 →</span>
+        <p>Verde nilo definitivo. Nace el apodo "Verdolaga".</p>
+      </div>
+    </div>
+    <p>Apodos que remiten al origen ferroviario:</p>
+    <div class="nicknames" id="nicknames"></div>
+  </section>
+
+  <section id="tab-estadio">
+    <div class="eyebrow mono">El templo de madera</div>
+    <h2 class="disp">Estadio Arquitecto Ricardo Etcheverry</h2>
+    <p>Ubicado en el mismo lugar desde 1905: el único estadio afiliado directamente a AFA que nunca se mudó de su terreno original.</p>
+    <div class="gallery">
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_Ferro_Carril_Oeste_platea.jpg" alt="Platea del estadio de Ferro Carril Oeste" loading="lazy">
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_de_Ferro_desde_el_puente.jpg" alt="Estadio de Ferro visto desde el puente" loading="lazy">
+    </div>
+    <div class="stat-row">
+      <div><div class="stat-num">1905</div><div class="stat-label mono">Año de apertura</div></div>
+      <div><div class="stat-num">~24.400</div><div class="stat-label mono">Capacidad actual</div></div>
+      <div><div class="stat-num">1°</div><div class="stat-label mono">Más antiguo de CABA en su sitio original</div></div>
+    </div>
+    <p>Conocido como "El Templo de Madera" por sus antiguas tribunas de tablones, el estadio también recibió recitales de artistas como The Cure, Iron Maiden, David Bowie y Guns N' Roses.</p>
+  </section>
+
+  <section id="tab-planteles">
+    <div class="eyebrow mono">1904 — hoy</div>
+    <h2 class="disp">Planteles históricos</h2>
+    <p>No existen planillas completas de cada una de las más de 100 temporadas del club — sobre todo de la época amateur, mal documentada. Estos son los equipos mejor registrados de la historia de Ferro. Tocá cada uno para ver la formación.</p>
+    <div id="historic-squads"></div>
+    <p class="mono" style="font-size:0.78rem; opacity:0.55; margin-top:1.4rem;">Fuentes: Wikipedia, CIHF, El Gráfico, Infobae y el sitio oficial del club.</p>
+  </section>
+
+  <section id="tab-plantel">
+    <div class="eyebrow mono">Primera Nacional 2026</div>
+    <h2 class="disp">Plantel actual</h2>
+    <p>DT: <strong>Juan Sara</strong> (49 años)</p>
+    <div class="filters" id="filters"></div>
+    <div class="squadgrid" id="squadgrid"></div>
+  </section>
+
+  <section id="tab-resultados">
+    <div class="eyebrow mono">Últimas fechas</div>
+    <h2 class="disp">Resultados — Primera Nacional 2026</h2>
+    <div class="standing">
+      <span>Posición actual en su zona</span>
+      <span class="pos mono">1° puesto · 37 pts (tras la fecha 19)</span>
+    </div>
+    <div id="results"></div>
+    <p class="mono" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Fuente: LA NACION / Canchallena, fechas 12 a 19 del torneo.</p>
+  </section>
+
+  <section id="tab-visitanos">
+    <div class="eyebrow mono">Cómo llegar</div>
+    <h2 class="disp">Visitanos en Caballito</h2>
+    <div class="visit-card">
+      <h3 class="disp" style="font-size:1.2rem; margin:0 0 0.8rem;">Sede y estadio</h3>
+      <p>Av. Avellaneda 1240 / Federico García Lorca 350</p>
+      <p>Barrio de Caballito, Ciudad de Buenos Aires</p>
+      <p class="label mono">Cómo llegar</p>
+      <p>Subte: Línea A, estación Primera Junta</p>
+      <p>Tren: Línea Sarmiento, estación Caballito</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="mono">
+  Sitio informativo no oficial sobre Club Ferro Carril Oeste · Caballito, Buenos Aires<br>
+  Fotos e imágenes: Wikimedia Commons (CC BY-SA)
+</footer>
+
+<div class="install-toast mono" id="installToast">
+  <span>Instalá Ferro en tu pantalla de inicio</span>
+  <button id="installBtn">Instalar</button>
+</div>
+
+<script>
+// ---------- DATA ----------
+const TIMELINE = [
+  { year: "1904", title: "Fundación", text: "El 28 de julio, 95 empleados del ferrocarril se reúnen en una oficina de cargas y fundan el \"Club Atlético del Ferrocarril Oeste de Buenos Aires\"." },
+  { year: "1905", title: "Se inaugura el estadio", text: "El 2 de enero abre sus puertas el campo de Caballito, sobre los mismos terrenos que ocupa hoy: el estadio más antiguo de Buenos Aires en su ubicación original." },
+  { year: "1910", title: "Nace el verde", text: "Tras usar los colores de Inglaterra y luego los del Aston Villa, el club adopta la camiseta verde nilo al afiliarse a la AFA. Nace el apodo \"Verdolaga\"." },
+  { year: "1912", title: "Primer ascenso", text: "Ferro gana la División Intermedia y sube a Primera División, sumando además el título de la Copa Bullrich." },
+  { year: "1980–85", title: "La era Griguol", text: "Con Carlos Timoteo Griguol como entrenador, el club vive su período más glorioso: dos campeonatos y las únicas dos participaciones en Copa Libertadores de su historia." },
+  { year: "2000–01", title: "Descensos", text: "Una crisis institucional golpea al club, que sufre dos descensos consecutivos y queda relegado a la tercera categoría." },
+  { year: "Hoy", title: "Primera Nacional", text: "El equipo compite en la segunda división del fútbol argentino." },
+];
+
+const NICKNAMES = ["Verdolagas", "Ferroviarios", "Tren Verde", "La Locomotora del Oeste", "El Rápido", "El Expreso"];
+
+const HISTORIC_SQUADS = [
+  { year:"1904", title:"El primer equipo",
+    context:"Debut oficioso del club, derrota 3-1 ante Flores AC el 4 de septiembre de 1904, apenas un mes después de la fundación.",
+    lines:[
+      {label:"Arquero", players:"Patrick A. Logan"},
+      {label:"Defensores", players:"Jordan, James Buchanan"},
+      {label:"Mediocampistas", players:"Murray, C. Roussillon, H. Day"},
+      {label:"Delanteros", players:"Casaballes, Cichero, Callegari, C. Fitzgerald, N. Cowell"},
+    ]},
+  { year:"1907", title:"Primer partido oficial",
+    context:"Debut en la Segunda División de la Argentine Football Association, 2-2 ante River Plate en Caballito, con la nueva camiseta borravino inspirada en el Aston Villa.",
+    lines:[
+      {label:"Arquero", players:"Vickers"},
+      {label:"Defensores", players:"De Andreis, Farabelli"},
+      {label:"Mediocampistas", players:"P. Paganini, Sayanes, Rolón"},
+      {label:"Delanteros", players:"Jacks, P. Marín, J. Paganini, Gaeta, Roque"},
+    ]},
+  { year:"1937–38", title:"Los Cinco Mosqueteros",
+    context:"Delantera surgida de las inferiores que deslumbró al fútbol argentino: entre los cinco no sumaban 100 años de edad.",
+    lines:[
+      {label:"Línea ofensiva", players:"Bernardo Gandulla, Juan José Maril, Raúl Emeal, Alfredo Borgnia, Jaime Sarlanga"},
+    ]},
+  { year:"1982", title:"Campeón invicto — Torneo Nacional",
+    context:"Primer título de Primera División en la historia del club, bajo la conducción de Carlos Timoteo Griguol: 16 victorias y 6 empates en 22 partidos, venciendo 2-0 a Quilmes en la final.",
+    lines:[
+      {label:"Arqueros", players:"Carlos Barisio, Eduardo Basigalup, José Turzi"},
+      {label:"Defensores", players:"Mario Gómez, Héctor Cúper, Juan Domingo Rocchia, Oscar Garré, Silvio Sotelo, Víctor Marchesini"},
+      {label:"Mediocampistas", players:"Carlos Arregui, Gerónimo Saccardi, Adolfino Cañete, Julio César Jiménez, Jorge Brandoni"},
+      {label:"Delanteros", players:"Claudio Crocco, Alberto Márcico, Miguel Ángel Juárez, Luis Andreuchi, Esteban González, Gustavo Herrera"},
+      {label:"DT", players:"Carlos Timoteo Griguol"},
+    ]},
+];
+
+const SQUAD = [
+  {name:"Fernando Monetti", pos:"Arq", detail:"Arquero", age:37},
+  {name:"Rafael Ferrario", pos:"Arq", detail:"Arquero", age:25},
+  {name:"Leonel Szalich", pos:"Arq", detail:"Arquero", age:22},
+  {name:"Lucas Ruiz", pos:"Arq", detail:"Arquero", age:23},
+  {name:"Sebastián Corda", pos:"Def", detail:"Lateral izquierdo", age:30},
+  {name:"Misael Tarón", pos:"Def", detail:"Lateral izquierdo", age:26},
+  {name:"Gustavo Canto", pos:"Def", detail:"Defensor central", age:32},
+  {name:"Juan Orellana", pos:"Def", detail:"Defensor central", age:28},
+  {name:"Leandro Peña", pos:"Def", detail:"Defensor central", age:22},
+  {name:"Federico Tévez", pos:"Def", detail:"Defensor central", age:26},
+  {name:"Fernando Torrent", pos:"Def", detail:"Lateral derecho", age:35},
+  {name:"Nazareno Kihm", pos:"Def", detail:"Defensor central", age:20},
+  {name:"Matías Kabalín", pos:"Med", detail:"Mediocampista central", age:27},
+  {name:"Gino Olguín", pos:"Med", detail:"Mediocampista central", age:26},
+  {name:"Enzo Hoyos", pos:"Med", detail:"Mediocampista central", age:25},
+  {name:"Martín Campos", pos:"Med", detail:"Mediocampista central", age:23},
+  {name:"Santiago García", pos:"Med", detail:"Mediocampista central", age:23},
+  {name:"Ángel González", pos:"Med", detail:"Volante derecho", age:31},
+  {name:"Gonzalo Castellani", pos:"Med", detail:"Mediocampista ofensivo", age:38},
+  {name:"Nicolás Gómez", pos:"Med", detail:"Mediocampista ofensivo", age:30},
+  {name:"Gabriel Ayala", pos:"Med", detail:"Mediocampista ofensivo", age:21},
+  {name:"Sebastián Flores", pos:"Med", detail:"Mediocampista central", age:20},
+  {name:"Tiago Esidin", pos:"Med", detail:"Mediocampista central", age:20},
+  {name:"Emiliano Ozuna", pos:"Del", detail:"Delantero izquierdo", age:30},
+  {name:"Emanuel Dening", pos:"Del", detail:"Centrodelantero", age:37},
+  {name:"Mateo Acosta", pos:"Del", detail:"Centrodelantero", age:33},
+  {name:"Lautaro Parisi", pos:"Del", detail:"Centrodelantero", age:32},
+  {name:"Franco García", pos:"Del", detail:"Centrodelantero", age:27},
+  {name:"Laureano Marra", pos:"Del", detail:"Centrodelantero", age:23},
+  {name:"Jonathan Menéndez", pos:"Del", detail:"Delantero derecho", age:32},
+];
+
+const POS_LABELS = {todos:"Todos", Arq:"Arqueros", Def:"Defensores", Med:"Mediocampo", Del:"Delanteros"};
+
+const RESULTS = [
+  {fecha:19, date:"05/07", rival:"San Telmo", cond:"L", score:"2-1", scorers:"Parisi, Hoyos"},
+  {fecha:18, date:"14/06", rival:"Acassuso", cond:"L", score:"2-1", scorers:"Kabalín, Parisi"},
+  {fecha:17, date:"07/06", rival:"Chaco For Ever", cond:"V", score:"2-1", scorers:"Hoyos, Canto"},
+  {fecha:15, date:"24/05", rival:"Central Norte (Salta)", cond:"L", score:"1-0", scorers:"González"},
+  {fecha:13, date:"11/05", rival:"Defensores de Belgrano", cond:"L", score:"2-1", scorers:"González, Parisi"},
+  {fecha:12, date:"03/05", rival:"Ciudad de Bolívar", cond:"V", score:"4-2", scorers:"Dening x2, Canto"},
+];
+
+// ---------- RENDER ----------
+function renderTimeline(){
+  const el = document.getElementById('timeline');
+  el.innerHTML = TIMELINE.map((s,i) => `
+    <div class="stop${i===0?' open':''}" data-i="${i}">
+      <div class="dot"></div>
+      <button class="stopbtn">
+        <span class="yr mono">${s.year}</span>
+        <span class="ti">${s.title}</span>
+      </button>
+      <p class="body">${s.text}</p>
+    </div>`).join('');
+  el.querySelectorAll('.stop').forEach(stop => {
+    stop.querySelector('.stopbtn').addEventListener('click', () => stop.classList.toggle('open'));
+  });
+}
+
+function renderNicknames(){
+  document.getElementById('nicknames').innerHTML = NICKNAMES.map(n => `<span class="nickname mono">${n}</span>`).join('');
+}
+
+function renderHistoricSquads(){
+  const el = document.getElementById('historic-squads');
+  el.innerHTML = HISTORIC_SQUADS.map((sq,i) => `
+    <div class="squadcard${i===0?' open':''}" data-i="${i}">
+      <button class="squadbtn">
+        <span><span class="yr mono">${sq.year}</span><span class="ti">${sq.title}</span></span>
+        <span class="plus mono">${i===0?'–':'+'}</span>
+      </button>
+      <div class="squadbody">
+        <p>${sq.context}</p>
+        ${sq.lines.map(l => `<div style="margin-bottom:0.6rem;"><div class="line-label mono">${l.label}</div><div>${l.players}</div></div>`).join('')}
+      </div>
+    </div>`).join('');
+  el.querySelectorAll('.squadcard').forEach(card => {
+    const btn = card.querySelector('.squadbtn');
+    btn.addEventListener('click', () => {
+      card.classList.toggle('open');
+      btn.querySelector('.plus').textContent = card.classList.contains('open') ? '–' : '+';
+    });
+  });
+}
+
+let squadFilter = 'todos';
+function renderFilters(){
+  document.getElementById('filters').innerHTML = Object.keys(POS_LABELS).map(k =>
+    `<button class="filterbtn mono${k===squadFilter?' active':''}" data-k="${k}">${POS_LABELS[k]}</button>`).join('');
+  document.querySelectorAll('.filterbtn').forEach(b => b.addEventListener('click', () => {
+    squadFilter = b.dataset.k; renderFilters(); renderSquad();
+  }));
+}
+function renderSquad(){
+  const list = squadFilter === 'todos' ? SQUAD : SQUAD.filter(p => p.pos === squadFilter);
+  document.getElementById('squadgrid').innerHTML = list.map(p => `
+    <div class="player">
+      <div class="name">${p.name}</div>
+      <div class="detail mono">${p.detail} · ${p.age} años</div>
+    </div>`).join('');
+}
+
+function renderResults(){
+  document.getElementById('results').innerHTML = RESULTS.map(r => `
+    <div class="rrow">
+      <span class="date mono">${r.date}</span>
+      <span class="cond mono">${r.cond}</span>
+      <span class="rival">${r.rival}</span>
+      <span class="score mono">${r.score}</span>
+      <span class="scorers">${r.scorers}</span>
+    </div>`).join('');
+}
+
+// ---------- TABS ----------
+document.querySelectorAll('.tabbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabbtn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    window.scrollTo({top: 0, behavior:'smooth'});
+  });
+});
+
+renderTimeline();
+renderNicknames();
+renderHistoricSquads();
+renderFilters();
+renderSquad();
+renderResults();
+
+// ---------- PWA: service worker + install prompt ----------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed', err));
+  });
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installToast').classList.add('show');
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  document.getElementById('installToast').classList.remove('show');
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  }
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installToast').classList.remove('show');
+});
+</script>
+</body>
+</html>
