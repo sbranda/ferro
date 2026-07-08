@@ -123,6 +123,11 @@
   .proximo{border:1px solid var(--brass); background:rgba(201,160,74,0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
   .proximo .tag{font-size:0.72rem; color:var(--brass); text-transform:uppercase;}
   .proximo .match{font-family:'Big Shoulders Display', sans-serif; font-size:1.3rem; margin-top:0.3rem;}
+  .countdown-hero{margin-top:1rem; font-size:0.85rem; color:var(--paper); opacity:0.9; min-height:1.2em;}
+  .countdown-box{display:flex; gap:0.6rem; margin-top:0.8rem; flex-wrap:wrap;}
+  .countdown-box .unit{border:1px solid rgba(241,236,221,0.25); padding:0.5rem 0.7rem; text-align:center; min-width:58px;}
+  .countdown-box .unit .num{font-family:'Big Shoulders Display', sans-serif; font-size:1.5rem; font-weight:700; line-height:1;}
+  .countdown-box .unit .lbl{font-size:0.65rem; color:var(--verde-bright); text-transform:uppercase; margin-top:0.2rem;}
   .rrow{display:flex; align-items:center; gap:1rem; padding:0.7rem 0.5rem; border-bottom:1px solid rgba(241,236,221,0.1);}
   .rrow:hover{background:rgba(46,158,99,0.06);}
   .rrow .date{font-size:0.75rem; color:rgba(241,236,221,0.5); width:48px;}
@@ -154,6 +159,7 @@
   <div class="station-sign"><span>Ferro Carril<br>Oeste</span></div>
   <p class="hero-sub">El corazón verde de Caballito. Un club de ferroviarios convertido en escuela deportiva.</p>
   <p class="hero-meta mono">FUNDADO 28 · 07 · 1904</p>
+  <div id="countdown-hero" class="countdown-hero"></div>
 </header>
 
 <nav class="tabs" id="tabs">
@@ -440,14 +446,90 @@ function renderResults(){
 
 function renderProximos(){
   const wrap = document.getElementById('proximo-wrap');
-  if (!PROXIMOS.length) { wrap.innerHTML = ''; return; }
+  const heroEl = document.getElementById('countdown-hero');
+  if (!PROXIMOS.length) {
+    wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.5;">Conectá el Worker (ver README) para ver la cuenta regresiva al próximo partido.</p>`;
+    if (heroEl) heroEl.innerHTML = '';
+    stopCountdown();
+    return;
+  }
   const p = PROXIMOS[0];
   wrap.innerHTML = `
     <div class="proximo">
       <div class="tag mono">Próximo partido</div>
       <div class="match">${p.condicion === 'L' ? 'Ferro' : p.rival} vs ${p.condicion === 'L' ? p.rival : 'Ferro'}</div>
       <div class="mono" style="font-size:0.8rem; opacity:0.8; margin-top:0.2rem;">${p.dia} · ${p.dato || 'hora a confirmar'}</div>
+      <div class="countdown-box" id="countdown-detail"></div>
     </div>`;
+  startCountdown(p);
+}
+
+// ---------- CUENTA REGRESIVA AL PRÓXIMO PARTIDO ----------
+let countdownInterval = null;
+
+// "dia" viene como DD/MM (sin año) y "dato" como HH:MM. Arma una fecha real,
+// asumiendo el año actual (o el que viene, si esa fecha ya pasó este año).
+function parseProximoDate(p){
+  const [d, m] = (p.dia || '').split('/').map(Number);
+  if (!d || !m) return null;
+  const [hh, mm] = (p.dato && /^\d{1,2}:\d{2}$/.test(p.dato)) ? p.dato.split(':').map(Number) : [12, 0];
+
+  const now = new Date();
+  let year = now.getFullYear();
+  let target = new Date(year, m - 1, d, hh, mm, 0);
+  if (target.getTime() < now.getTime() - 3 * 60 * 60 * 1000) {
+    target = new Date(year + 1, m - 1, d, hh, mm, 0);
+  }
+  return target;
+}
+
+function startCountdown(proximo){
+  stopCountdown();
+  const target = parseProximoDate(proximo);
+  if (!target) return;
+
+  function tick(){
+    const diffMs = target.getTime() - Date.now();
+    const heroEl = document.getElementById('countdown-hero');
+    const detailEl = document.getElementById('countdown-detail');
+
+    if (diffMs <= 0 && diffMs > -3 * 60 * 60 * 1000) {
+      if (heroEl) heroEl.innerHTML = `<span class="mono" style="color:#c9a04a;">⚽ Ferro está jugando ahora</span>`;
+      if (detailEl) detailEl.innerHTML = `<span class="mono" style="color:#c9a04a;">⚽ En cancha</span>`;
+      return;
+    }
+    if (diffMs <= 0) {
+      if (heroEl) heroEl.innerHTML = '';
+      if (detailEl) detailEl.innerHTML = '';
+      stopCountdown();
+      return;
+    }
+
+    const totalSec = Math.floor(diffMs / 1000);
+    const days = Math.floor(totalSec / 86400);
+    const hours = Math.floor((totalSec % 86400) / 3600);
+    const mins = Math.floor((totalSec % 3600) / 60);
+    const secs = totalSec % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+
+    if (heroEl) {
+      heroEl.innerHTML = `<span class="mono">Próximo partido en ${days}d ${pad(hours)}:${pad(mins)}:${pad(secs)}</span>`;
+    }
+    if (detailEl) {
+      detailEl.innerHTML = `
+        <div class="unit"><div class="num">${days}</div><div class="lbl mono">días</div></div>
+        <div class="unit"><div class="num">${pad(hours)}</div><div class="lbl mono">hs</div></div>
+        <div class="unit"><div class="num">${pad(mins)}</div><div class="lbl mono">min</div></div>
+        <div class="unit"><div class="num">${pad(secs)}</div><div class="lbl mono">seg</div></div>`;
+    }
+  }
+
+  tick();
+  countdownInterval = setInterval(tick, 1000);
+}
+
+function stopCountdown(){
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
 }
 
 // Trae fixture y resultados en vivo desde el Worker de Cloudflare (worker.js).
