@@ -30,24 +30,34 @@ Cualquiera de estas opciones sirve, subiendo los 3 archivos tal cual:
 
 Una vez publicado, entrá desde el celular con Chrome (Android) o Safari (iPhone) y usá "Agregar a pantalla de inicio" — o esperá el cartel de instalación que aparece solo.
 
-## Datos en vivo (fixture y resultados)
+## Datos en vivo (fixture, resultados y tabla de posiciones)
 
-`worker.js` es un Cloudflare Worker que scrapea la página de Promiedos del club
-y devuelve JSON. Sin esto, la app funciona igual pero con los resultados fijos
-que están en el código.
+`worker.js` es un Cloudflare Worker con dos rutas:
+
+- **`/fixture`** — scrapea la página del equipo en Promiedos (próximos partidos y resultados)
+- **`/standings`** — scrapea la tabla de posiciones completa de la Zona A en ESPN
+
+(La tabla de Promiedos no se puede leer con un scraper simple porque se carga
+con JavaScript del lado del cliente — por eso esa parte usa ESPN, que sí la
+sirve completa en el HTML.)
+
+Sin esto, la app funciona igual pero con los resultados fijos que están en el
+código, y el botón "Ver tabla completa de la zona" muestra un aviso en vez de
+la tabla.
 
 1. Entrá a [dash.cloudflare.com](https://dash.cloudflare.com) (cuenta gratis, sin tarjeta)
 2. Workers & Pages → Create → Create Worker
 3. Pegá todo el contenido de `worker.js` reemplazando el código de ejemplo
 4. Deploy — te da una URL tipo `https://ferro-fixture.tu-nombre.workers.dev`
-5. Probala en el navegador entrando a esa URL + `/fixture` (debería devolver JSON)
-6. En `index.html`, buscá la línea `const WORKER_URL = "..."` y poné tu URL ahí
+5. Probalo en el navegador: esa URL + `/fixture` y esa URL + `/standings` (ambas deberían devolver JSON)
+6. En `index.html`, buscá la línea `const WORKER_BASE = "..."` y poné tu URL ahí (sin barra al final, sin `/fixture`)
 7. Volvé a subir `index.html` a donde tengas publicada la PWA
 
-El Worker cachea la respuesta 30 minutos de su lado, así que no golpea Promiedos
-en cada visita. Si en algún momento Promiedos cambia el diseño de su página,
-el scraper puede dejar de funcionar — en ese caso la app simplemente vuelve a
-mostrar los datos fijos (no se rompe nada, solo deja de actualizarse sola).
+El Worker cachea cada respuesta 30 minutos de su lado, así que no golpea
+Promiedos ni ESPN en cada visita. Si en algún momento alguno de los dos sitios
+cambia el diseño de su página, ese scraper puede dejar de funcionar — en ese
+caso esa parte puntual de la app deja de actualizarse (muestra un aviso o los
+datos fijos), pero el resto sigue funcionando normalmente.
 
 
 

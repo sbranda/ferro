@@ -137,6 +137,13 @@
   .rrow .scorers{font-size:0.8rem; opacity:0.65; flex:1 1 160px;}
 
   .visit-card{background:var(--verde-deep); border:1px solid var(--verde-nilo); padding:1.8rem;}
+  .standings-table{width:100%; border-collapse:collapse; font-size:0.82rem;}
+  .standings-table th{font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color:var(--verde-bright); text-transform:uppercase; text-align:center; padding:0.4rem 0.3rem; border-bottom:1px solid var(--line);}
+  .standings-table th:first-child, .standings-table td:first-child{text-align:left; padding-left:0;}
+  .standings-table td{text-align:center; padding:0.45rem 0.3rem; border-bottom:1px solid rgba(241,236,221,0.08);}
+  .standings-table tr.me{background:rgba(46,158,99,0.15);}
+  .standings-table tr.me td{color:var(--paper); font-weight:600;}
+  .standings-table .team-cell{display:flex; align-items:center; gap:0.4rem; text-align:left;}
   .visit-card .label{color:var(--brass); font-size:0.78rem; text-transform:uppercase; margin-top:1rem;}
 
   footer{text-align:center; padding:2.5rem 1.5rem 3.5rem; opacity:0.5; font-size:0.75rem;}
@@ -249,6 +256,11 @@
     <div id="proximo-wrap"></div>
     <div id="results"></div>
     <p class="mono" id="fuente-datos" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Fuente: LA NACION / Canchallena, fechas 12 a 19 del torneo (datos fijos).</p>
+
+    <button class="btn mono" id="toggle-standings" style="margin-top:1.6rem; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.6rem 1rem;">
+      Ver tabla completa de la zona ▾
+    </button>
+    <div id="standings-wrap" style="display:none; margin-top:1rem;"></div>
   </section>
 
   <section id="tab-visitanos">
@@ -358,8 +370,9 @@ const SQUAD = [
 
 const POS_LABELS = {todos:"Todos", Arq:"Arqueros", Def:"Defensores", Med:"Mediocampo", Del:"Delanteros"};
 
-// URL de tu Worker de Cloudflare (ver worker.js). Reemplazá esto por la tuya después de desplegarlo.
-const WORKER_URL = "https://ferro-fixture.TU-SUBDOMINIO.workers.dev/fixture";
+// URL BASE de tu Worker de Cloudflare (ver worker.js), sin barra final.
+// Reemplazá esto por la tuya después de desplegarlo.
+const WORKER_BASE = "https://ferro-fixture.TU-SUBDOMINIO.workers.dev";
 
 const RESULTS_FALLBACK = [
   {fecha:19, date:"05/07", rival:"San Telmo", cond:"L", score:"2-1", scorers:"Parisi, Hoyos"},
@@ -537,7 +550,7 @@ function stopCountdown(){
 async function fetchLiveData(){
   const fuenteEl = document.getElementById('fuente-datos');
   try {
-    const resp = await fetch(WORKER_URL, { cache: 'no-store' });
+    const resp = await fetch(`${WORKER_BASE}/fixture`, { cache: 'no-store' });
     if (!resp.ok) throw new Error('respuesta no OK');
     const data = await resp.json();
 
@@ -607,6 +620,64 @@ function markResultsAsSeen(){
 }
 
 // ---------- TABS ----------
+// ---------- TABLA COMPLETA DE LA ZONA ----------
+let standingsLoaded = false;
+
+function renderStandings(data){
+  const wrap = document.getElementById('standings-wrap');
+  if (!data || !data.equipos || !data.equipos.length) {
+    wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">No se pudo traer la tabla en este momento. Probá de nuevo más tarde.</p>`;
+    return;
+  }
+  const rows = data.equipos.map(e => `
+    <tr class="${/ferro/i.test(e.equipo) ? 'me' : ''}">
+      <td>${e.pos}</td>
+      <td class="team-cell">${e.equipo}</td>
+      <td>${e.jugados}</td>
+      <td>${e.ganados}</td>
+      <td>${e.empatados}</td>
+      <td>${e.perdidos}</td>
+      <td>${e.gf}</td>
+      <td>${e.gc}</td>
+      <td>${e.dif > 0 ? '+' + e.dif : e.dif}</td>
+      <td><strong>${e.pts}</strong></td>
+    </tr>`).join('');
+
+  wrap.innerHTML = `
+    <table class="standings-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p class="mono" style="font-size:0.72rem; opacity:0.5; margin-top:0.8rem;">Fuente: ESPN · Zona ${data.grupo} · actualizado ${new Date(data.actualizado).toLocaleString('es-AR')}</p>`;
+}
+
+async function loadStandings(){
+  const wrap = document.getElementById('standings-wrap');
+  wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">Cargando tabla…</p>`;
+  try {
+    const resp = await fetch(`${WORKER_BASE}/standings`, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('respuesta no OK');
+    const data = await resp.json();
+    renderStandings(data);
+    standingsLoaded = true;
+  } catch (err) {
+    console.warn('No se pudo traer la tabla de posiciones:', err);
+    wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">No se pudo traer la tabla (¿desplegaste el Worker? ver README).</p>`;
+  }
+}
+
+document.getElementById('toggle-standings').addEventListener('click', (e) => {
+  const wrap = document.getElementById('standings-wrap');
+  const isHidden = wrap.style.display === 'none';
+  wrap.style.display = isHidden ? 'block' : 'none';
+  e.target.textContent = isHidden ? 'Ocultar tabla completa ▴' : 'Ver tabla completa de la zona ▾';
+  if (isHidden && !standingsLoaded) loadStandings();
+});
+
 document.querySelectorAll('.tabbtn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tabbtn').forEach(b => b.classList.remove('active'));
