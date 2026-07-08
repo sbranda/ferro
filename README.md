@@ -53,6 +53,7 @@ mostrar los datos fijos (no se rompe nada, solo deja de actualizarse sola).
 
 ## Notas
 
-- El escudo y las fotos del estadio se cargan desde Wikimedia Commons; necesitás conexión la primera vez para que el service worker las guarde en caché.
+- El service worker ahora precachea el escudo y las 3 fotos del estadio apenas se instala la PWA (no espera a que las visites), así Historia, Identidad, Estadio y Planteles se ven completos sin conexión desde el principio.
+- Las tipografías de Google Fonts se intentan precachear también, pero si tu conexión es lenta esa parte puede fallar sin romper nada — en ese caso el texto se ve con la tipografía de reemplazo del sistema hasta la próxima vez que haya conexión.
 - Sin desplegar el Worker, los datos de resultados quedan fijos en el código. Con el Worker desplegado, el fixture y los resultados se actualizan solos.
 - El plantel (nombres, edades) sí queda fijo — no vale la pena scrapearlo tan seguido.
