@@ -53,6 +53,9 @@ mostrar los datos fijos (no se rompe nada, solo deja de actualizarse sola).
 
 ## Notas
 
+- **Ícono con badge:** cuando instalás la app y hay resultados nuevos que todavía no viste en la pestaña Resultados, el ícono va a mostrar un numerito (como los mensajes sin leer). Se limpia solo apenas entrás a esa pestaña.
+  - Funciona en Chrome/Edge de escritorio y en Android con la app instalada. En iPhone (Safari) todavía no está soportado — el ícono se queda sin badge, pero el resto de la app funciona igual.
+  - Ojo: el badge solo se actualiza cuando **abrís la app** y ella misma chequea contra el Worker si hay resultados nuevos. No hay forma de que aparezca el número mientras la app está cerrada — eso requeriría notificaciones push con un servidor propio, que es un paso más grande (avisame si te interesa).
 - El service worker ahora precachea el escudo y las 3 fotos del estadio apenas se instala la PWA (no espera a que las visites), así Historia, Identidad, Estadio y Planteles se ven completos sin conexión desde el principio.
 - Las tipografías de Google Fonts se intentan precachear también, pero si tu conexión es lenta esa parte puede fallar sin romper nada — en ese caso el texto se ve con la tipografía de reemplazo del sistema hasta la próxima vez que haya conexión.
 - Sin desplegar el Worker, los datos de resultados quedan fijos en el código. Con el Worker desplegado, el fixture y los resultados se actualizan solos.

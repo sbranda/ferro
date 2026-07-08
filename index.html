@@ -481,6 +481,47 @@ async function fetchLiveData(){
   } catch (err) {
     console.warn('No se pudo traer el fixture en vivo, se usan los datos fijos:', err);
   }
+  updateBadge();
+}
+
+// ---------- ÍCONO CON BADGE (resultado nuevo sin ver) ----------
+// Requiere la Badging API (navigator.setAppBadge), disponible en Chrome/Edge
+// de escritorio y Android cuando la app está instalada. En navegadores sin
+// soporte esto simplemente no hace nada — no rompe la app.
+const SEEN_KEY = 'ferro_last_seen_result';
+
+function resultFingerprint(r){
+  return `${r.date}|${r.rival}|${r.score}`;
+}
+
+function updateBadge(){
+  if (!('setAppBadge' in navigator) || !RESULTS.length) return;
+  const seen = localStorage.getItem(SEEN_KEY);
+
+  // Primera vez que se abre la app: arrancamos a trackear desde acá,
+  // sin marcar los resultados fijos existentes como si fueran todos nuevos.
+  if (seen === null) {
+    localStorage.setItem(SEEN_KEY, resultFingerprint(RESULTS[0]));
+    return;
+  }
+
+  let newCount = 0;
+  for (const r of RESULTS) {
+    if (resultFingerprint(r) === seen) break;
+    newCount++;
+  }
+
+  if (newCount > 0) {
+    navigator.setAppBadge(newCount).catch(() => {});
+  } else {
+    navigator.clearAppBadge().catch(() => {});
+  }
+}
+
+function markResultsAsSeen(){
+  if (!RESULTS.length) return;
+  localStorage.setItem(SEEN_KEY, resultFingerprint(RESULTS[0]));
+  if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
 }
 
 // ---------- TABS ----------
@@ -491,6 +532,7 @@ document.querySelectorAll('.tabbtn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     window.scrollTo({top: 0, behavior:'smooth'});
+    if (btn.dataset.tab === 'resultados') markResultsAsSeen();
   });
 });
 
