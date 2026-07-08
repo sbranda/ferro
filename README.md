@@ -46,12 +46,16 @@ código, y el botón "Ver tabla completa de la zona" muestra un aviso en vez de
 la tabla.
 
 1. Entrá a [dash.cloudflare.com](https://dash.cloudflare.com) (cuenta gratis, sin tarjeta)
-2. Workers & Pages → Create → Create Worker
-3. Pegá todo el contenido de `worker.js` reemplazando el código de ejemplo
-4. Deploy — te da una URL tipo `https://ferro-fixture.tu-nombre.workers.dev`
-5. Probalo en el navegador: esa URL + `/fixture` y esa URL + `/standings` (ambas deberían devolver JSON)
-6. En `index.html`, buscá la línea `const WORKER_BASE = "..."` y poné tu URL ahí (sin barra al final, sin `/fixture`)
-7. Volvé a subir `index.html` a donde tengas publicada la PWA
+2. En el menú de la izquierda, **Workers & Pages**
+3. Botón **Create application** (ya no dice "Create Worker")
+4. En la galería de templates, elegí **"Hello World"** (el más simple) y **Deploy**
+5. Te crea el Worker con el código de ejemplo. Andá a tu Worker → **Edit Code** (arriba a la derecha)
+6. Borrá todo el código de ejemplo y pegá el contenido completo de `worker.js`
+7. Guardá y **Deploy** de nuevo
+8. Te da una URL tipo `https://ferro-fixture.tu-nombre.workers.dev`
+9. Probalo en el navegador: esa URL + `/fixture` y esa URL + `/standings` (ambas deberían devolver JSON)
+10. En `index.html`, buscá la línea `const WORKER_BASE = "..."` y poné tu URL ahí (sin barra al final, sin `/fixture`)
+11. Volvé a subir `index.html` a donde tengas publicada la PWA
 
 El Worker cachea cada respuesta 30 minutos de su lado, así que no golpea
 Promiedos ni ESPN en cada visita. Si en algún momento alguno de los dos sitios
