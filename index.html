@@ -189,6 +189,11 @@
   .hero-proximo .cond{color:var(--brass); font-size:0.78rem;}
   .hero-proximo .when{font-size:0.85rem; opacity:0.85;}
   .countdown-box{display:flex; gap:0.6rem; margin-top:0.8rem; flex-wrap:wrap;}
+  .clima-box{
+    margin-top:0.8rem; display:flex; align-items:center; gap:0.5rem;
+    font-size:0.85rem; opacity:0.9;
+  }
+  .clima-icon{font-size:1.3rem;}
   .countdown-box .unit{border:1px solid rgba(241,236,221,0.25); padding:0.5rem 0.7rem; text-align:center; min-width:58px;}
   .countdown-box .unit .num{font-family:'Big Shoulders Display', sans-serif; font-size:1.5rem; font-weight:700; line-height:1;}
   .countdown-box .unit .lbl{font-size:0.65rem; color:var(--verde-bright); text-transform:uppercase; margin-top:0.2rem;}
@@ -773,6 +778,7 @@ function renderProximos(){
       <div class="match">${rivalVs}</div>
       <div class="mono" style="font-size:0.8rem; opacity:0.8; margin-top:0.2rem;">${p.dia} · ${p.dato || 'hora a confirmar'}</div>
       <div class="countdown-box" id="countdown-detail"></div>
+      <div id="clima-wrap"></div>
     </div>`;
 
   if (heroCard) {
@@ -788,6 +794,65 @@ function renderProximos(){
 
   startCountdown(p);
   renderRivales();
+  fetchClima(p);
+}
+
+// ---------- CLIMA DEL DÍA DEL PARTIDO ----------
+// Usa Open-Meteo (gratis, sin clave, con CORS abierto) para el pronóstico del
+// día del próximo partido. Solo se puede pedir hasta 16 días a futuro — si el
+// partido está más lejos, no mostramos nada en vez de inventar un dato.
+const CABALLITO_LAT = -34.6186;
+const CABALLITO_LON = -58.4372;
+
+// Códigos WMO de Open-Meteo simplificados a emoji + texto corto.
+function climaDesc(code){
+  if (code === 0) return { icon: '☀️', texto: 'despejado' };
+  if ([1, 2].includes(code)) return { icon: '🌤️', texto: 'poco nublado' };
+  if (code === 3) return { icon: '☁️', texto: 'nublado' };
+  if ([45, 48].includes(code)) return { icon: '🌫️', texto: 'niebla' };
+  if ([51, 53, 55, 56, 57].includes(code)) return { icon: '🌦️', texto: 'llovizna' };
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return { icon: '🌧️', texto: 'lluvia' };
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: '🌨️', texto: 'nieve' };
+  if ([95, 96, 99].includes(code)) return { icon: '⛈️', texto: 'tormenta' };
+  return { icon: '🌡️', texto: '' };
+}
+
+async function fetchClima(proximo){
+  const wrap = document.getElementById('clima-wrap');
+  if (!wrap) return;
+
+  const target = parseProximoDate(proximo);
+  if (!target) { wrap.innerHTML = ''; return; }
+
+  const hoy = new Date();
+  const diffDias = Math.round((target - hoy) / 86400000);
+  if (diffDias < 0 || diffDias > 15) { wrap.innerHTML = ''; return; } // fuera del rango del pronóstico
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${CABALLITO_LAT}&longitude=${CABALLITO_LON}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FArgentina%2FBuenos_Aires&forecast_days=16`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('respuesta no OK');
+    const data = await resp.json();
+
+    const fechaTarget = target.toISOString().slice(0, 10);
+    const idx = data.daily.time.indexOf(fechaTarget);
+    if (idx === -1) { wrap.innerHTML = ''; return; }
+
+    const code = data.daily.weather_code[idx];
+    const tmax = Math.round(data.daily.temperature_2m_max[idx]);
+    const tmin = Math.round(data.daily.temperature_2m_min[idx]);
+    const lluvia = data.daily.precipitation_probability_max[idx];
+    const { icon, texto } = climaDesc(code);
+
+    wrap.innerHTML = `
+      <div class="clima-box">
+        <span class="clima-icon">${icon}</span>
+        <span class="mono">${tmin}° / ${tmax}° · ${texto}${lluvia != null ? ' · ' + lluvia + '% lluvia' : ''}</span>
+      </div>`;
+  } catch (err) {
+    console.warn('No se pudo traer el clima:', err);
+    wrap.innerHTML = '';
+  }
 }
 
 // Tarjetas de próximos rivales, cada una con un botón que abre una búsqueda
