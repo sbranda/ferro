@@ -121,6 +121,18 @@
     display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;}
   .standing .pos{color:var(--brass);}
   .proximo{border:1px solid var(--brass); background:rgba(201,160,74,0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
+  .racha{margin-bottom:1.4rem;}
+  .racha .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.5rem;}
+  .racha-icons{display:flex; gap:0.5rem;}
+  .racha-icon{
+    width:2.1rem; height:2.1rem; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:1rem;
+    color:var(--bg); cursor:default;
+  }
+  .racha-icon.g{background:var(--verde-bright);}
+  .racha-icon.e{background:var(--brass);}
+  .racha-icon.p{background:var(--rust); color:var(--paper);}
   .proximo .tag{font-size:0.72rem; color:var(--brass); text-transform:uppercase;}
   .proximo .match{font-family:'Big Shoulders Display', sans-serif; font-size:1.3rem; margin-top:0.3rem;}
   .countdown-hero{margin-top:1rem; font-size:0.85rem; color:var(--paper); opacity:0.9; min-height:1.2em;}
@@ -268,6 +280,7 @@
       <span>Posición actual en su zona</span>
       <span class="pos mono">1° puesto · 37 pts (tras la fecha 19)</span>
     </div>
+    <div id="racha-wrap"></div>
     <div id="proximo-wrap"></div>
     <div id="results"></div>
     <p class="mono" id="fuente-datos" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Fuente: LA NACION / Canchallena, fechas 12 a 19 del torneo (datos fijos).</p>
@@ -470,6 +483,38 @@ function renderResults(){
       <span class="score mono">${r.score}</span>
       <span class="scorers">${r.scorers}</span>
     </div>`).join('');
+  renderRacha();
+}
+
+// El "score" siempre viene como "goles de Ferro - goles del rival" (así lo
+// entrega el scraper), sin importar si Ferro jugó de local o visitante.
+function resultLetter(score){
+  const m = /^(\d+)\s*-\s*(\d+)$/.exec((score || '').trim());
+  if (!m) return null;
+  const [, gf, gc] = m.map(Number);
+  if (gf > gc) return 'g';
+  if (gf < gc) return 'p';
+  return 'e';
+}
+
+function renderRacha(){
+  const wrap = document.getElementById('racha-wrap');
+  if (!wrap) return;
+  const ultimos = RESULTS.slice(0, 5).reverse(); // más viejo a la izquierda, más reciente a la derecha
+  if (!ultimos.length) { wrap.innerHTML = ''; return; }
+
+  const labels = { g: 'G', e: 'E', p: 'P' };
+  const icons = ultimos.map(r => {
+    const letra = resultLetter(r.score);
+    if (!letra) return '';
+    return `<div class="racha-icon ${letra}" title="${r.rival}: ${r.score}">${labels[letra]}</div>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="racha">
+      <div class="label mono">Racha (últimos ${ultimos.length})</div>
+      <div class="racha-icons">${icons}</div>
+    </div>`;
 }
 
 function renderProximos(){
