@@ -124,6 +124,20 @@
   .proximo .tag{font-size:0.72rem; color:var(--brass); text-transform:uppercase;}
   .proximo .match{font-family:'Big Shoulders Display', sans-serif; font-size:1.3rem; margin-top:0.3rem;}
   .countdown-hero{margin-top:1rem; font-size:0.85rem; color:var(--paper); opacity:0.9; min-height:1.2em;}
+  .hero-proximo{
+    margin-top:1.6rem;
+    border:1px solid rgba(241,236,221,0.3);
+    background:rgba(13,31,22,0.55);
+    padding:1rem 1.6rem;
+    display:inline-flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.3rem;
+  }
+  .hero-proximo .tag{font-size:0.68rem; color:var(--verde-bright); text-transform:uppercase; letter-spacing:0.1em;}
+  .hero-proximo .match{font-family:'Big Shoulders Display', sans-serif; font-size:1.5rem; text-transform:uppercase;}
+  .hero-proximo .cond{color:var(--brass); font-size:0.78rem;}
+  .hero-proximo .when{font-size:0.85rem; opacity:0.85;}
   .countdown-box{display:flex; gap:0.6rem; margin-top:0.8rem; flex-wrap:wrap;}
   .countdown-box .unit{border:1px solid rgba(241,236,221,0.25); padding:0.5rem 0.7rem; text-align:center; min-width:58px;}
   .countdown-box .unit .num{font-family:'Big Shoulders Display', sans-serif; font-size:1.5rem; font-weight:700; line-height:1;}
@@ -166,6 +180,7 @@
   <div class="station-sign"><span>Ferro Carril<br>Oeste</span></div>
   <p class="hero-sub">El corazón verde de Caballito. Un club de ferroviarios convertido en escuela deportiva.</p>
   <p class="hero-meta mono">FUNDADO 28 · 07 · 1904</p>
+  <div id="hero-proximo" class="hero-proximo"></div>
   <div id="countdown-hero" class="countdown-hero"></div>
 </header>
 
@@ -460,21 +475,47 @@ function renderResults(){
 function renderProximos(){
   const wrap = document.getElementById('proximo-wrap');
   const heroEl = document.getElementById('countdown-hero');
+  const heroCard = document.getElementById('hero-proximo');
   if (!PROXIMOS.length) {
     wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.5;">Conectá el Worker (ver README) para ver la cuenta regresiva al próximo partido.</p>`;
     if (heroEl) heroEl.innerHTML = '';
+    if (heroCard) heroCard.innerHTML = '';
     stopCountdown();
     return;
   }
   const p = PROXIMOS[0];
+  const esLocal = p.condicion === 'L';
+  const rivalVs = esLocal ? `Ferro vs ${p.rival}` : `${p.rival} vs Ferro`;
+  const condLabel = esLocal ? 'Local · Estadio Etcheverry' : 'Visitante';
+  const fechaLegible = formatFechaLegible(p);
+
   wrap.innerHTML = `
     <div class="proximo">
       <div class="tag mono">Próximo partido</div>
-      <div class="match">${p.condicion === 'L' ? 'Ferro' : p.rival} vs ${p.condicion === 'L' ? p.rival : 'Ferro'}</div>
+      <div class="match">${rivalVs}</div>
       <div class="mono" style="font-size:0.8rem; opacity:0.8; margin-top:0.2rem;">${p.dia} · ${p.dato || 'hora a confirmar'}</div>
       <div class="countdown-box" id="countdown-detail"></div>
     </div>`;
+
+  if (heroCard) {
+    heroCard.innerHTML = `
+      <div class="tag mono">Próximo partido</div>
+      <div class="match">${rivalVs}</div>
+      <div class="cond mono">${condLabel}</div>
+      <div class="when mono">${fechaLegible}${p.dato ? ' · ' + p.dato + ' hs' : ''}</div>`;
+  }
+
   startCountdown(p);
+}
+
+// Convierte "DD/MM" en algo legible tipo "vie. 18 de jul." usando el mismo
+// cálculo de año que la cuenta regresiva (parseProximoDate).
+function formatFechaLegible(p){
+  const date = parseProximoDate(p);
+  if (!date) return p.dia;
+  const dias = ['dom.', 'lun.', 'mar.', 'mié.', 'jue.', 'vie.', 'sáb.'];
+  const meses = ['ene.', 'feb.', 'mar.', 'abr.', 'may.', 'jun.', 'jul.', 'ago.', 'sep.', 'oct.', 'nov.', 'dic.'];
+  return `${dias[date.getDay()]} ${date.getDate()} de ${meses[date.getMonth()]}`;
 }
 
 // ---------- CUENTA REGRESIVA AL PRÓXIMO PARTIDO ----------
