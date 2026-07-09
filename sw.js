@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ferro-pwa-v4';
+const CACHE_NAME = 'ferro-pwa-v5';
 
 // App shell: mismo origen que la PWA.
 const APP_SHELL = [
@@ -21,6 +21,15 @@ const CROSS_ORIGIN_ASSETS = [
   'https://commons.wikimedia.org/wiki/Special:FilePath/Club_ferro_carril_oeste_sede_social_1930.jpg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Ferro_escudo_figurita_1958.jpg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Bandera_de_Ferro_Carril_Oeste.png',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20C.A.S.M.png',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Col%C3%B3n.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Deportivo%20Moron%20Escudo%20de%201962.png',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Los%20Andes.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Deportivo%20Godoy%20Cruz%20Antonio%20Tomba.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20All%20Boys.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Atl%C3%A9tico%20San%20Telmo%20(logo).svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Defensores%20de%20Belgrano%20Logo.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atletico%20Mitre.svg',
   'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap',
 ];
 

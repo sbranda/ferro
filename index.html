@@ -426,17 +426,35 @@ const TIMELINE = [
 const CREST_MAP = {
   'san miguel': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20C.A.S.M.png',
   'colon': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Col%C3%B3n.svg',
+  'deportivo moron': 'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Deportivo%20Moron%20Escudo%20de%201962.png',
+  'moron': 'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Deportivo%20Moron%20Escudo%20de%201962.png',
+  'los andes': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Los%20Andes.svg',
+  'godoy cruz': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Deportivo%20Godoy%20Cruz%20Antonio%20Tomba.svg',
+  'all boys': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20All%20Boys.svg',
+  'san telmo': 'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Atl%C3%A9tico%20San%20Telmo%20(logo).svg',
+  'defensores de belgrano': 'https://commons.wikimedia.org/wiki/Special:FilePath/Defensores%20de%20Belgrano%20Logo.svg',
+  'mitre': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atletico%20Mitre.svg',
 };
 
 function iniciales(nombre){
   return (nombre || '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
+// Busca el escudo de un rival: primero por coincidencia exacta de nombre
+// normalizado, y si no, probando si alguna clave conocida está contenida en
+// el nombre (por si Promiedos lo escribe distinto, ej. "Dep. Morón" en vez
+// de "Deportivo Morón").
+function buscarEscudo(nombre){
+  const n = normalizar(nombre);
+  if (CREST_MAP[n]) return CREST_MAP[n];
+  const key = Object.keys(CREST_MAP).find(k => n.includes(k) || k.includes(n));
+  return key ? CREST_MAP[key] : null;
+}
+
 // Devuelve el HTML de un escudo (imagen real si la tenemos, si no un círculo
 // con las iniciales del equipo) para mostrar junto al nombre de un rival.
 function escudoHtml(nombre, size){
-  const key = normalizar(nombre);
-  const url = CREST_MAP[key];
+  const url = buscarEscudo(nombre);
   if (url) {
     return `<img src="${url}" alt="Escudo de ${nombre}" style="width:${size}px; height:${size}px; object-fit:contain;" loading="lazy">`;
   }
