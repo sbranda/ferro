@@ -372,7 +372,7 @@ const POS_LABELS = {todos:"Todos", Arq:"Arqueros", Def:"Defensores", Med:"Medioc
 
 // URL BASE de tu Worker de Cloudflare (ver worker.js), sin barra final.
 // Reemplazá esto por la tuya después de desplegarlo.
-const WORKER_BASE = "https://ferro-fixture.brandaster.workers.dev";
+const WORKER_BASE = "https://ferro-fixture1.brandaster.workers.dev";
 
 const RESULTS_FALLBACK = [
   {fecha:19, date:"05/07", rival:"San Telmo", cond:"L", score:"2-1", scorers:"Parisi, Hoyos"},
@@ -652,7 +652,7 @@ function renderStandings(data){
       </thead>
       <tbody>${rows}</tbody>
     </table>
-    <p class="mono" style="font-size:0.72rem; opacity:0.5; margin-top:0.8rem;">Fuente: ESPN · Zona ${data.grupo} · actualizado ${new Date(data.actualizado).toLocaleString('es-AR')}</p>`;
+    <p class="mono" style="font-size:0.72rem; opacity:0.5; margin-top:0.8rem;">Fuente: Wikipedia · Zona ${data.grupo} · actualizado ${new Date(data.actualizado).toLocaleString('es-AR')} · puede estar algo atrasada respecto al último resultado</p>`;
 }
 
 async function loadStandings(){
