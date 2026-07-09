@@ -1075,7 +1075,8 @@ async function loadZona(zona){
 }
 
 async function loadStandings(){
-  await Promise.all([loadZona('A'), loadZona('B')]);
+  await loadZona('A');
+  await loadZona('B');
   standingsLoaded = true;
 }
 
