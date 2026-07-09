@@ -122,6 +122,20 @@
   .standing .pos{color:var(--brass);}
   .proximo{border:1px solid var(--brass); background:rgba(201,160,74,0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
   .racha{margin-bottom:1.4rem;}
+  .rivales{margin-top:1.8rem;}
+  .rivales .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.6rem;}
+  .rival-card{
+    display:flex; align-items:center; justify-content:space-between; gap:0.8rem; flex-wrap:wrap;
+    border:1px solid var(--line); padding:0.8rem 1rem; margin-bottom:0.5rem;
+  }
+  .rival-card .info .name{font-weight:600;}
+  .rival-card .info .when{font-size:0.78rem; color:rgba(241,236,221,0.65); margin-top:0.15rem;}
+  .rival-btn{
+    font-size:0.75rem; text-decoration:none; color:var(--verde-bright);
+    border:1px solid var(--verde-nilo); padding:0.4rem 0.8rem; white-space:nowrap;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .rival-btn:hover{background:rgba(46,158,99,0.12);}
   .racha .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.5rem;}
   .racha-icons{display:flex; gap:0.5rem;}
   .racha-icon{
@@ -282,6 +296,7 @@
     </div>
     <div id="racha-wrap"></div>
     <div id="proximo-wrap"></div>
+    <div id="rivales-wrap"></div>
     <div id="results"></div>
     <p class="mono" id="fuente-datos" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Fuente: LA NACION / Canchallena, fechas 12 a 19 del torneo (datos fijos).</p>
 
@@ -551,6 +566,39 @@ function renderProximos(){
   }
 
   startCountdown(p);
+  renderRivales();
+}
+
+// Tarjetas de próximos rivales, cada una con un botón que abre una búsqueda
+// de Google ya armada con el historial de enfrentamientos. No hay ninguna
+// fuente confiable para scrapear ese historial, así que en vez de mostrar
+// datos que se pueden desactualizar o romper, dejamos que cada uno abra
+// resultados reales y actuales cuando lo necesite.
+function renderRivales(){
+  const wrap = document.getElementById('rivales-wrap');
+  if (!wrap) return;
+  if (!PROXIMOS.length) { wrap.innerHTML = ''; return; }
+
+  const proximos = PROXIMOS.slice(0, 5);
+  const cards = proximos.map(p => {
+    const query = encodeURIComponent(`Ferro Carril Oeste vs ${p.rival} historial enfrentamientos`);
+    const url = `https://www.google.com/search?q=${query}`;
+    const condLabel = p.condicion === 'L' ? 'Local' : 'Visitante';
+    return `
+      <div class="rival-card">
+        <div class="info">
+          <div class="name">${p.rival}</div>
+          <div class="when mono">${p.dia}${p.dato ? ' · ' + p.dato : ''} · ${condLabel}</div>
+        </div>
+        <a class="rival-btn" href="${url}" target="_blank" rel="noopener noreferrer">Ver historial ↗</a>
+      </div>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="rivales">
+      <div class="label mono">Próximos rivales</div>
+      ${cards}
+    </div>`;
 }
 
 // Convierte "DD/MM" en algo legible tipo "vie. 18 de jul." usando el mismo
