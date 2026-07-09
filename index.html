@@ -479,6 +479,8 @@ function renderProximos(){
 
 // ---------- CUENTA REGRESIVA AL PRÓXIMO PARTIDO ----------
 let countdownInterval = null;
+let livePollInterval = null;
+let liveStatusText = null;
 
 // "dia" viene como DD/MM (sin año) y "dato" como HH:MM. Arma una fecha real,
 // asumiendo el año actual (o el que viene, si esa fecha ya pasó este año).
@@ -498,6 +500,8 @@ function parseProximoDate(p){
 
 function startCountdown(proximo){
   stopCountdown();
+  stopLivePoll();
+  liveStatusText = null;
   const target = parseProximoDate(proximo);
   if (!target) return;
 
@@ -507,11 +511,12 @@ function startCountdown(proximo){
     const detailEl = document.getElementById('countdown-detail');
 
     if (diffMs <= 0 && diffMs > -3 * 60 * 60 * 1000) {
-      if (heroEl) heroEl.innerHTML = `<span class="mono" style="color:#c9a04a;">⚽ Ferro está jugando ahora</span>`;
-      if (detailEl) detailEl.innerHTML = `<span class="mono" style="color:#c9a04a;">⚽ En cancha</span>`;
+      startLivePoll(proximo);
+      renderLiveStatus();
       return;
     }
     if (diffMs <= 0) {
+      stopLivePoll();
       if (heroEl) heroEl.innerHTML = '';
       if (detailEl) detailEl.innerHTML = '';
       stopCountdown();
@@ -543,6 +548,61 @@ function startCountdown(proximo){
 
 function stopCountdown(){
   if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+}
+
+// Mientras el partido está "en curso" (entre la hora de inicio y +3hs), la app
+// sondea el Worker cada 60 segundos para detectar cambios: si Promiedos ya
+// publicó el resultado final, o si el dato del próximo partido dejó de ser
+// un horario (HH:MM) — señal de que puede haber un marcador en vivo.
+// Esto es lo mejor que se puede armar sin una fuente de datos minuto a minuto:
+// no hay garantía de que Promiedos muestre el marcador mientras el partido
+// está en curso, así que puede quedarse en "Ferro está jugando ahora" sin más
+// detalle hasta que termine.
+function startLivePoll(proximo){
+  if (livePollInterval) return;
+
+  const poll = async () => {
+    try {
+      const resp = await fetch(`${WORKER_BASE}/fixture`, { cache: 'no-store' });
+      if (!resp.ok) return;
+      const data = await resp.json();
+
+      const finished = (data.resultados || []).find(
+        (r) => r.rival === proximo.rival && r.dia === proximo.dia
+      );
+      if (finished) {
+        liveStatusText = `Final: ${finished.dato}`;
+        renderLiveStatus();
+        stopLivePoll();
+        return;
+      }
+
+      const stillProximo = (data.proximos || []).find(
+        (p) => p.rival === proximo.rival && p.dia === proximo.dia
+      );
+      if (stillProximo && stillProximo.dato && !/^\d{1,2}:\d{2}$/.test(stillProximo.dato)) {
+        liveStatusText = stillProximo.dato;
+      }
+      renderLiveStatus();
+    } catch (err) {
+      console.warn('No se pudo actualizar el estado en vivo:', err);
+    }
+  };
+
+  poll();
+  livePollInterval = setInterval(poll, 60000);
+}
+
+function stopLivePoll(){
+  if (livePollInterval) { clearInterval(livePollInterval); livePollInterval = null; }
+}
+
+function renderLiveStatus(){
+  const heroEl = document.getElementById('countdown-hero');
+  const detailEl = document.getElementById('countdown-detail');
+  const text = liveStatusText ? `⚽ ${liveStatusText}` : '⚽ Ferro está jugando ahora';
+  if (heroEl) heroEl.innerHTML = `<span class="mono" style="color:#c9a04a;">${text}</span>`;
+  if (detailEl) detailEl.innerHTML = `<span class="mono" style="color:#c9a04a;">${text}</span>`;
 }
 
 // Trae fixture y resultados en vivo desde el Worker de Cloudflare (worker.js).

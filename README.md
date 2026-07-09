@@ -35,37 +35,40 @@ Una vez publicado, entrá desde el celular con Chrome (Android) o Safari (iPhone
 `worker.js` es un Cloudflare Worker con dos rutas:
 
 - **`/fixture`** — scrapea la página del equipo en Promiedos (próximos partidos y resultados)
-- **`/standings`** — scrapea la tabla de posiciones completa de la Zona A en ESPN
+- **`/standings`** — trae la tabla de posiciones completa de la Zona A desde Wikipedia
 
 (La tabla de Promiedos no se puede leer con un scraper simple porque se carga
-con JavaScript del lado del cliente — por eso esa parte usa ESPN, que sí la
-sirve completa en el HTML.)
+con JavaScript del lado del cliente. ESPN sí la sirve completa en el HTML,
+pero bloquea los pedidos automáticos con un desafío anti-bot — no hay forma
+de esquivarlo desde un Worker simple. Wikipedia no bloquea bots y usa tablas
+HTML estándar, así que es la fuente más confiable para esto — a cambio, puede
+estar algo atrasada respecto al resultado más reciente, porque la actualizan
+editores voluntarios y no en tiempo real.)
 
 Sin esto, la app funciona igual pero con los resultados fijos que están en el
 código, y el botón "Ver tabla completa de la zona" muestra un aviso en vez de
 la tabla.
 
 1. Entrá a [dash.cloudflare.com](https://dash.cloudflare.com) (cuenta gratis, sin tarjeta)
-2. En el menú de la izquierda, **Workers & Pages**
-3. Botón **Create application** (ya no dice "Create Worker")
-4. En la galería de templates, elegí **"Hello World"** (el más simple) y **Deploy**
-5. Te crea el Worker con el código de ejemplo. Andá a tu Worker → **Edit Code** (arriba a la derecha)
-6. Borrá todo el código de ejemplo y pegá el contenido completo de `worker.js`
-7. Guardá y **Deploy** de nuevo
-8. Te da una URL tipo `https://ferro-fixture.tu-nombre.workers.dev`
-9. Probalo en el navegador: esa URL + `/fixture` y esa URL + `/standings` (ambas deberían devolver JSON)
-10. En `index.html`, buscá la línea `const WORKER_BASE = "..."` y poné tu URL ahí (sin barra al final, sin `/fixture`)
-11. Volvé a subir `index.html` a donde tengas publicada la PWA
+2. Workers & Pages → Create → Create Worker
+3. Pegá todo el contenido de `worker.js` reemplazando el código de ejemplo
+4. Deploy — te da una URL tipo `https://ferro-fixture.tu-nombre.workers.dev`
+5. Probalo en el navegador: esa URL + `/fixture` y esa URL + `/standings` (ambas deberían devolver JSON)
+6. En `index.html`, buscá la línea `const WORKER_BASE = "..."` y poné tu URL ahí (sin barra al final, sin `/fixture`)
+7. Volvé a subir `index.html` a donde tengas publicada la PWA
 
 El Worker cachea cada respuesta 30 minutos de su lado, así que no golpea
-Promiedos ni ESPN en cada visita. Si en algún momento alguno de los dos sitios
-cambia el diseño de su página, ese scraper puede dejar de funcionar — en ese
-caso esa parte puntual de la app deja de actualizarse (muestra un aviso o los
-datos fijos), pero el resto sigue funcionando normalmente.
+Promiedos ni Wikipedia en cada visita. Si en algún momento alguno de los dos
+sitios cambia el diseño de su página, ese scraper puede dejar de funcionar —
+en ese caso esa parte puntual de la app deja de actualizarse (muestra un
+aviso o los datos fijos), pero el resto sigue funcionando normalmente.
 
 
 
 ## Notas
+
+- **Marcador en vivo:** cuando el próximo partido llega a su hora de inicio, la app sondea el Worker cada 60 segundos durante 3 horas buscando cambios. No hay ninguna fuente confiable de minuto a minuto (Promiedos lo oculta con JavaScript, ESPN bloquea bots), así que en el peor de los casos vas a ver "Ferro está jugando ahora" sin marcador hasta que termine, y recién ahí aparece el resultado final. No pude probar esto contra un partido real en curso todavía — si el formato que usa Promiedos durante un partido en vivo es distinto a lo esperado, puede necesitar un ajuste la primera vez que se dé el caso real.
+- Para el marcador en vivo minuto a minuto de verdad, lo más simple sigue siendo preguntarme directamente en el chat ("¿cómo va Ferro?") — ahí busco en la web en el momento, sin las limitaciones del scraping.
 
 - **Ícono con badge:** cuando instalás la app y hay resultados nuevos que todavía no viste en la pestaña Resultados, el ícono va a mostrar un numerito (como los mensajes sin leer). Se limpia solo apenas entrás a esa pestaña.
   - Funciona en Chrome/Edge de escritorio y en Android con la app instalada. En iPhone (Safari) todavía no está soportado — el ícono se queda sin badge, pero el resto de la app funciona igual.
