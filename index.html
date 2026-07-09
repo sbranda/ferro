@@ -109,6 +109,20 @@
 
   /* squad grid */
   .filters{display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.6rem;}
+  #jugador-search{
+    width:100%; box-sizing:border-box; margin:1.4rem 0 0.6rem;
+    background:transparent; border:1px solid var(--verde-nilo); color:var(--paper);
+    padding:0.7rem 0.9rem; font-size:0.9rem;
+  }
+  #jugador-search::placeholder{color:rgba(241,236,221,0.45);}
+  #jugador-search:focus{outline:none; border-color:var(--verde-bright);}
+  .jugador-hit{
+    border:1px solid var(--line); padding:0.7rem 0.9rem; margin-bottom:0.5rem;
+    display:flex; justify-content:space-between; align-items:center; gap:0.8rem; flex-wrap:wrap;
+  }
+  .jugador-hit .nombre{font-weight:600;}
+  .jugador-hit .contexto{font-size:0.78rem; color:var(--verde-bright); font-family:'IBM Plex Mono', monospace;}
+  .jugador-sin{font-size:0.85rem; opacity:0.6; margin-bottom:1rem;}
   .filterbtn{padding:0.5rem 1rem; font-size:0.8rem; border:1px solid var(--verde-nilo); color:var(--verde-bright);}
   .filterbtn.active{background:var(--verde-nilo); color:var(--paper);}
   .squadgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:0.7rem;}
@@ -275,6 +289,10 @@
     <div class="eyebrow mono">1904 — hoy</div>
     <h2 class="disp">Planteles históricos</h2>
     <p>No existen planillas completas de cada una de las más de 100 temporadas del club — sobre todo de la época amateur, mal documentada. Estos son los equipos mejor registrados de la historia de Ferro. Tocá cada uno para ver la formación.</p>
+
+    <input type="text" id="jugador-search" class="mono" placeholder="Buscar jugador por nombre…" autocomplete="off">
+    <div id="jugador-resultados"></div>
+
     <div id="historic-squads"></div>
     <p class="mono" style="font-size:0.78rem; opacity:0.55; margin-top:1.4rem;">Fuentes: Wikipedia, CIHF, El Gráfico, Infobae y el sitio oficial del club.</p>
   </section>
@@ -471,6 +489,67 @@ function renderHistoricSquads(){
     });
   });
 }
+
+// ---------- BUSCADOR DE JUGADORES POR NOMBRE ----------
+// Busca tanto en los planteles históricos (parseando el texto separado por
+// comas de cada línea) como en el plantel actual, sin distinguir mayúsculas
+// ni acentos.
+function normalizar(str){
+  return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+function buscarJugadores(query){
+  const q = normalizar(query);
+  if (!q) return [];
+  const hits = [];
+
+  HISTORIC_SQUADS.forEach(sq => {
+    sq.lines.forEach(line => {
+      line.players.split(',').forEach(nombreRaw => {
+        const nombre = nombreRaw.trim();
+        if (nombre && normalizar(nombre).includes(q)) {
+          hits.push({ nombre, contexto: `${sq.year} · ${sq.title}` });
+        }
+      });
+    });
+  });
+
+  SQUAD.forEach(p => {
+    if (normalizar(p.name).includes(q)) {
+      hits.push({ nombre: p.name, contexto: `Plantel actual · ${p.detail}` });
+    }
+  });
+
+  return hits;
+}
+
+function renderBusquedaJugadores(query){
+  const wrap = document.getElementById('jugador-resultados');
+  const listaHistorica = document.getElementById('historic-squads');
+  const q = query.trim();
+
+  if (!q) {
+    wrap.innerHTML = '';
+    listaHistorica.style.display = '';
+    return;
+  }
+  listaHistorica.style.display = 'none';
+
+  const hits = buscarJugadores(q);
+  if (!hits.length) {
+    wrap.innerHTML = `<p class="jugador-sin mono">No se encontró ningún jugador con "${q}".</p>`;
+    return;
+  }
+  wrap.innerHTML = hits.map(h => `
+    <div class="jugador-hit">
+      <span class="nombre">${h.nombre}</span>
+      <span class="contexto">${h.contexto}</span>
+    </div>`).join('');
+}
+
+document.getElementById('jugador-search').addEventListener('input', (e) => {
+  renderBusquedaJugadores(e.target.value);
+});
 
 let squadFilter = 'todos';
 function renderFilters(){
