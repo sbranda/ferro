@@ -441,7 +441,7 @@ const CREST_MAP = {
   'defensores de belgrano': 'https://commons.wikimedia.org/wiki/Special:FilePath/Defensores%20de%20Belgrano%20Logo.svg',
   'mitre': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atletico%20Mitre.svg',
   // Zona B
-  'atlanta': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20ATLANTA.png',
+  'atlanta': 'https://commons.wikimedia.org/wiki/Special:FilePath/Club-Atletico-Atlanta.png',
   'quilmes': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20Quilmes%20Atl%C3%A9tico%20Club.svg',
   'chacarita': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Chacarita%20Juniors.svg',
   'chacarita juniors': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Chacarita%20Juniors.svg',
@@ -1130,7 +1130,7 @@ function renderStandings(data, zona){
     return;
   }
   const rows = data.equipos.map(e => {
-    const esFerro = /ferro/i.test(e.equipo);
+    const esFerro = /ferro\s*carril\s*oeste/i.test(e.equipo);
     const escudo = esFerro
       ? '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg" alt="Escudo de Ferro" style="width:20px; height:20px; object-fit:contain;">'
       : escudoHtml(e.equipo, 20);
