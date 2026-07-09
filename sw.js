@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ferro-pwa-v3';
+const CACHE_NAME = 'ferro-pwa-v4';
 
 // App shell: mismo origen que la PWA.
 const APP_SHELL = [
