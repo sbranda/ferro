@@ -356,7 +356,10 @@
     <button class="btn mono" id="toggle-standings" style="margin-top:1.6rem; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.6rem 1rem;">
       Ver tabla completa de la zona ▾
     </button>
-    <div id="standings-wrap" style="display:none; margin-top:1rem;"></div>
+    <div id="standings-wrap" style="display:none; margin-top:1rem;">
+      <div id="standings-table-wrap-A"></div>
+      <div id="standings-table-wrap-B" style="margin-top:2rem;"></div>
+    </div>
   </section>
 
   <section id="tab-visitanos">
@@ -1017,13 +1020,15 @@ function markResultsAsSeen(){
 }
 
 // ---------- TABS ----------
-// ---------- TABLA COMPLETA DE LA ZONA ----------
+// ---------- TABLA COMPLETA DE AMBAS ZONAS ----------
 let standingsLoaded = false;
 
-function renderStandings(data){
-  const wrap = document.getElementById('standings-wrap');
+function renderStandings(data, zona){
+  const wrap = document.getElementById(`standings-table-wrap-${zona}`);
   if (!data || !data.equipos || !data.equipos.length) {
-    wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">No se pudo traer la tabla en este momento. Probá de nuevo más tarde.</p>`;
+    wrap.innerHTML = `
+      <div class="eyebrow mono">Zona ${zona}</div>
+      <p class="mono" style="font-size:0.8rem; opacity:0.55;">No se pudo traer la tabla en este momento. Probá de nuevo más tarde.</p>`;
     return;
   }
   const rows = data.equipos.map(e => `
@@ -1041,6 +1046,7 @@ function renderStandings(data){
     </tr>`).join('');
 
   wrap.innerHTML = `
+    <div class="eyebrow mono">Zona ${data.grupo}</div>
     <table class="standings-table">
       <thead>
         <tr>
@@ -1049,22 +1055,28 @@ function renderStandings(data){
       </thead>
       <tbody>${rows}</tbody>
     </table>
-    <p class="mono" style="font-size:0.72rem; opacity:0.5; margin-top:0.8rem;">Fuente: Wikipedia · Zona ${data.grupo} · actualizado ${new Date(data.actualizado).toLocaleString('es-AR')} · puede estar algo atrasada respecto al último resultado</p>`;
+    <p class="mono" style="font-size:0.72rem; opacity:0.5; margin-top:0.8rem;">Fuente: Wikipedia · actualizado ${new Date(data.actualizado).toLocaleString('es-AR')} · puede estar algo atrasada respecto al último resultado</p>`;
+}
+
+async function loadZona(zona){
+  const wrap = document.getElementById(`standings-table-wrap-${zona}`);
+  wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">Cargando tabla de la Zona ${zona}…</p>`;
+  try {
+    const resp = await fetch(`${WORKER_BASE}/standings?zona=${zona}`, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('respuesta no OK');
+    const data = await resp.json();
+    renderStandings(data, zona);
+  } catch (err) {
+    console.warn(`No se pudo traer la tabla de la Zona ${zona}:`, err);
+    wrap.innerHTML = `
+      <div class="eyebrow mono">Zona ${zona}</div>
+      <p class="mono" style="font-size:0.8rem; opacity:0.55;">No se pudo traer la tabla (¿desplegaste el Worker? ver README).</p>`;
+  }
 }
 
 async function loadStandings(){
-  const wrap = document.getElementById('standings-wrap');
-  wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">Cargando tabla…</p>`;
-  try {
-    const resp = await fetch(`${WORKER_BASE}/standings`, { cache: 'no-store' });
-    if (!resp.ok) throw new Error('respuesta no OK');
-    const data = await resp.json();
-    renderStandings(data);
-    standingsLoaded = true;
-  } catch (err) {
-    console.warn('No se pudo traer la tabla de posiciones:', err);
-    wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">No se pudo traer la tabla (¿desplegaste el Worker? ver README).</p>`;
-  }
+  await Promise.all([loadZona('A'), loadZona('B')]);
+  standingsLoaded = true;
 }
 
 document.getElementById('toggle-standings').addEventListener('click', (e) => {
