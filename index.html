@@ -185,6 +185,7 @@
   }
   .hero-proximo .tag{font-size:0.68rem; color:var(--verde-bright); text-transform:uppercase; letter-spacing:0.1em;}
   .hero-proximo .match{font-family:'Big Shoulders Display', sans-serif; font-size:1.5rem; text-transform:uppercase;}
+  .hero-proximo .match-row{display:flex; align-items:center; gap:0.7rem;}
   .hero-proximo .cond{color:var(--brass); font-size:0.78rem;}
   .hero-proximo .when{font-size:0.85rem; opacity:0.85;}
   .countdown-box{display:flex; gap:0.6rem; margin-top:0.8rem; flex-wrap:wrap;}
@@ -414,6 +415,30 @@ const TIMELINE = [
   { year: "2000–01", title: "Descensos", text: "Una crisis institucional golpea al club, que sufre dos descensos consecutivos y queda relegado a la tercera categoría." },
   { year: "Hoy", title: "Primera Nacional", text: "El equipo compite en la segunda división del fútbol argentino." },
 ];
+
+// Escudos reales de rivales de la Zona A (Wikimedia Commons), por nombre
+// normalizado (sin acentos, minúscula). Todavía no tengo la URL de todos los
+// 18 equipos de la zona — para los que faltan, se muestra un círculo con las
+// iniciales en vez de romper la imagen. Se puede ampliar con el tiempo.
+const CREST_MAP = {
+  'san miguel': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20C.A.S.M.png',
+  'colon': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Col%C3%B3n.svg',
+};
+
+function iniciales(nombre){
+  return (nombre || '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+// Devuelve el HTML de un escudo (imagen real si la tenemos, si no un círculo
+// con las iniciales del equipo) para mostrar junto al nombre de un rival.
+function escudoHtml(nombre, size){
+  const key = normalizar(nombre);
+  const url = CREST_MAP[key];
+  if (url) {
+    return `<img src="${url}" alt="Escudo de ${nombre}" style="width:${size}px; height:${size}px; object-fit:contain;" loading="lazy">`;
+  }
+  return `<div style="width:${size}px; height:${size}px; border-radius:50%; background:var(--verde-deep); border:1px solid var(--verde-nilo); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:${Math.round(size * 0.38)}px; color:var(--verde-bright); flex-shrink:0;">${iniciales(nombre)}</div>`;
+}
 
 const NICKNAMES = ["Verdolagas", "Ferroviarios", "Tren Verde", "La Locomotora del Oeste", "El Rápido", "El Expreso"];
 
@@ -730,9 +755,12 @@ function renderProximos(){
     </div>`;
 
   if (heroCard) {
+    const ferroCrest = '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg" alt="Escudo de Ferro" style="width:36px; height:36px; object-fit:contain;">';
+    const rivalCrest = escudoHtml(p.rival, 36);
+    const [crestIzq, crestDer] = esLocal ? [ferroCrest, rivalCrest] : [rivalCrest, ferroCrest];
     heroCard.innerHTML = `
       <div class="tag mono">Próximo partido</div>
-      <div class="match">${rivalVs}</div>
+      <div class="match-row">${crestIzq}<span class="match">${rivalVs}</span>${crestDer}</div>
       <div class="cond mono">${condLabel}</div>
       <div class="when mono">${fechaLegible}${p.dato ? ' · ' + p.dato + ' hs' : ''}</div>`;
   }
@@ -758,9 +786,12 @@ function renderRivales(){
     const condLabel = p.condicion === 'L' ? 'Local' : 'Visitante';
     return `
       <div class="rival-card">
-        <div class="info">
-          <div class="name">${p.rival}</div>
-          <div class="when mono">${p.dia}${p.dato ? ' · ' + p.dato : ''} · ${condLabel}</div>
+        <div class="info" style="display:flex; align-items:center; gap:0.7rem;">
+          ${escudoHtml(p.rival, 32)}
+          <div>
+            <div class="name">${p.rival}</div>
+            <div class="when mono">${p.dia}${p.dato ? ' · ' + p.dato : ''} · ${condLabel}</div>
+          </div>
         </div>
         <a class="rival-btn" href="${url}" target="_blank" rel="noopener noreferrer">Ver historial ↗</a>
       </div>`;
