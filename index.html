@@ -424,11 +424,12 @@ const TIMELINE = [
   { year: "Hoy", title: "Primera Nacional", text: "El equipo compite en la segunda división del fútbol argentino." },
 ];
 
-// Escudos reales de rivales de la Zona A (Wikimedia Commons), por nombre
-// normalizado (sin acentos, minúscula). Todavía no tengo la URL de todos los
-// 18 equipos de la zona — para los que faltan, se muestra un círculo con las
+// Escudos reales de rivales de ambas zonas (Wikimedia Commons), por nombre
+// normalizado (sin acentos, minúscula). Todavía no tengo la URL de los 36
+// equipos completos — para los que faltan, se muestra un círculo con las
 // iniciales en vez de romper la imagen. Se puede ampliar con el tiempo.
 const CREST_MAP = {
+  // Zona A
   'san miguel': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20C.A.S.M.png',
   'colon': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Col%C3%B3n.svg',
   'deportivo moron': 'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Deportivo%20Moron%20Escudo%20de%201962.png',
@@ -439,6 +440,20 @@ const CREST_MAP = {
   'san telmo': 'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Atl%C3%A9tico%20San%20Telmo%20(logo).svg',
   'defensores de belgrano': 'https://commons.wikimedia.org/wiki/Special:FilePath/Defensores%20de%20Belgrano%20Logo.svg',
   'mitre': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atletico%20Mitre.svg',
+  // Zona B
+  'atlanta': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20ATLANTA.png',
+  'quilmes': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20Quilmes%20Atl%C3%A9tico%20Club.svg',
+  'chacarita': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Chacarita%20Juniors.svg',
+  'chacarita juniors': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Chacarita%20Juniors.svg',
+  'nueva chicago': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Nueva%20Chicago.svg',
+  'temperley': 'https://commons.wikimedia.org/wiki/Special:FilePath/Club-Atl%C3%A9tico-Temperley.png',
+  'patronato': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Patronato%20de%20la%20Juventud%20Cat%C3%B3lica.svg',
+  // Encontrados en una segunda pasada
+  'almirante brown': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Almirante%20Brown.svg',
+  'estudiantes': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Estudiantes%20de%20Buenos%20Aires.svg',
+  'central norte': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Central%20Norte%20de%20Salta.svg',
+  'chaco for ever': 'https://commons.wikimedia.org/wiki/Special:FilePath/Chaco%20For%20Ever-ARG.png',
+  'almagro': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Almagro.svg',
 };
 
 function iniciales(nombre){
@@ -1114,10 +1129,15 @@ function renderStandings(data, zona){
       <p class="mono" style="font-size:0.8rem; opacity:0.55;">No se pudo traer la tabla en este momento. Probá de nuevo más tarde.</p>`;
     return;
   }
-  const rows = data.equipos.map(e => `
-    <tr class="${/ferro/i.test(e.equipo) ? 'me' : ''}">
+  const rows = data.equipos.map(e => {
+    const esFerro = /ferro/i.test(e.equipo);
+    const escudo = esFerro
+      ? '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg" alt="Escudo de Ferro" style="width:20px; height:20px; object-fit:contain;">'
+      : escudoHtml(e.equipo, 20);
+    return `
+    <tr class="${esFerro ? 'me' : ''}">
       <td>${e.pos}</td>
-      <td class="team-cell">${e.equipo}</td>
+      <td class="team-cell">${escudo}<span>${e.equipo}</span></td>
       <td>${e.jugados}</td>
       <td>${e.ganados}</td>
       <td>${e.empatados}</td>
@@ -1126,7 +1146,8 @@ function renderStandings(data, zona){
       <td>${e.gc}</td>
       <td>${e.dif > 0 ? '+' + e.dif : e.dif}</td>
       <td><strong>${e.pts}</strong></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   wrap.innerHTML = `
     <div class="eyebrow mono">Zona ${data.grupo}</div>

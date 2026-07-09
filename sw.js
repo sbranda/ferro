@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ferro-pwa-v5';
+const CACHE_NAME = 'ferro-pwa-v7';
 
 // App shell: mismo origen que la PWA.
 const APP_SHELL = [
@@ -30,6 +30,17 @@ const CROSS_ORIGIN_ASSETS = [
   'https://commons.wikimedia.org/wiki/Special:FilePath/Club%20Atl%C3%A9tico%20San%20Telmo%20(logo).svg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Defensores%20de%20Belgrano%20Logo.svg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atletico%20Mitre.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20ATLANTA.png',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20Quilmes%20Atl%C3%A9tico%20Club.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Chacarita%20Juniors.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Nueva%20Chicago.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Club-Atl%C3%A9tico-Temperley.png',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Patronato%20de%20la%20Juventud%20Cat%C3%B3lica.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Almirante%20Brown.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Atl%C3%A9tico%20Estudiantes%20de%20Buenos%20Aires.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Central%20Norte%20de%20Salta.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Chaco%20For%20Ever-ARG.png',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Almagro.svg',
   'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap',
 ];
 
