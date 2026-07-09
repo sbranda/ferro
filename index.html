@@ -66,6 +66,15 @@
   h2{font-size:clamp(1.7rem,4vw,2.4rem); margin:0 0 1.2rem;}
 
   /* timeline */
+  .efemeride{
+    border:1px solid var(--brass); background:rgba(201,160,74,0.08);
+    padding:1.1rem 1.3rem; margin-bottom:1.8rem;
+  }
+  .efemeride .tag{font-size:0.7rem; color:var(--brass); text-transform:uppercase; letter-spacing:0.08em;}
+  .efemeride .titulo{font-family:'Big Shoulders Display', sans-serif; font-size:1.2rem; margin-top:0.3rem;}
+  .efemeride .texto{font-size:0.9rem; opacity:0.9; margin-top:0.3rem;}
+  .efemeride.proxima{border-color:rgba(241,236,221,0.25); background:transparent;}
+  .efemeride.proxima .tag{color:var(--verde-bright);}
   .timeline{position:relative; padding-left:2.2rem; margin-top:2rem;}
   .timeline::before{content:""; position:absolute; left:0.5rem; top:0.3rem; bottom:0.3rem; width:6px;
     background:repeating-linear-gradient(180deg, var(--brass) 0 4px, transparent 4px 16px);}
@@ -238,6 +247,7 @@
 <main>
 
   <section id="tab-historia" class="active">
+    <div id="efemeride-wrap"></div>
     <div class="eyebrow mono">Línea de tiempo</div>
     <h2 class="disp">De la oficina de cargas al templo de madera</h2>
     <p>Tocá cada estación para ver su historia.</p>
@@ -351,6 +361,26 @@
 
 <script>
 // ---------- DATA ----------
+// Hitos con fecha exacta (día/mes) documentada, para el widget "Un día como hoy".
+// Ojo: son pocos porque la mayoría de la historia del club no tiene fecha
+// exacta registrada (sobre todo la época amateur) — no es una lista completa,
+// son los que sí están bien documentados.
+const EFEMERIDES = [
+  { dia: 2, mes: 1, anio: 1905, texto: "Se inaugura el estadio de Caballito, en el mismo terreno que ocupa hoy." },
+  { dia: 13, mes: 4, anio: 1913, texto: "Primer partido oficial de Ferro en Primera División: empate 1-1 ante Riachuelo, en Caballito." },
+  { dia: 21, mes: 4, anio: 1907, texto: "Debut oficial en AFA: empate ante River Plate en Caballito, con la nueva camiseta borravino estilo Aston Villa." },
+  { dia: 24, mes: 5, anio: 1984, texto: "Ferro gana 3-0 de visitante a River Plate en la ida de la final del Metropolitano 1984." },
+  { dia: 30, mes: 5, anio: 1984, texto: "Ferro le gana 1-0 a River en la vuelta y se consagra campeón del Metropolitano 1984." },
+  { dia: 27, mes: 6, anio: 1982, texto: "Ferro vence 2-0 a Quilmes en la final y se consagra campeón invicto del Nacional 1982: su primer título de Primera División." },
+  { dia: 28, mes: 7, anio: 1904, texto: "95 empleados del ferrocarril fundan el club en una oficina de cargas: nace Ferro Carril Oeste." },
+  { dia: 4, mes: 9, anio: 1904, texto: "Debut oficioso del club: derrota 3-1 ante Flores AC, apenas un mes después de la fundación." },
+  { dia: 18, mes: 8, anio: 1912, texto: "Ferro le gana por primera vez a Boca Juniors, 1-0 de visitante, con gol de Deandreis." },
+  { dia: 10, mes: 11, anio: 1912, texto: "Ferro vuelve a vencer a Boca Juniors, esta vez 2-0 de local en Caballito." },
+  { dia: 15, mes: 8, anio: 1916, texto: "Santiago Sayanes se convierte en el primer verdolaga en jugar para la Selección Argentina." },
+  { dia: 11, mes: 3, anio: 1979, texto: "Gerónimo Saccardi vuelve a jugar en Caballito tras su paso por España: Ferro le gana 2-1 a Boca y él hace el gol del triunfo." },
+  { dia: 18, mes: 10, anio: 2014, texto: "El club levanta oficialmente el estado de quiebra, tras 12 años, y los socios recuperan la administración." },
+];
+
 const TIMELINE = [
   { year: "1904", title: "Fundación", text: "El 28 de julio, 95 empleados del ferrocarril se reúnen en una oficina de cargas y fundan el \"Club Atlético del Ferrocarril Oeste de Buenos Aires\"." },
   { year: "1905", title: "Se inaugura el estadio", text: "El 2 de enero abre sus puertas el campo de Caballito, sobre los mismos terrenos que ocupa hoy: el estadio más antiguo de Buenos Aires en su ubicación original." },
@@ -448,6 +478,45 @@ let RESULTS = RESULTS_FALLBACK;
 let PROXIMOS = [];
 
 // ---------- RENDER ----------
+// ---------- UN DÍA COMO HOY ----------
+function renderEfemeride(){
+  const wrap = document.getElementById('efemeride-wrap');
+  if (!wrap) return;
+
+  const hoy = new Date();
+  const dia = hoy.getDate();
+  const mes = hoy.getMonth() + 1;
+
+  const deHoy = EFEMERIDES.filter(e => e.dia === dia && e.mes === mes);
+
+  if (deHoy.length) {
+    wrap.innerHTML = deHoy.map(e => `
+      <div class="efemeride">
+        <div class="tag mono">Un día como hoy · ${e.anio}</div>
+        <div class="texto">${e.texto}</div>
+      </div>`).join('');
+    return;
+  }
+
+  // Si no hay nada para la fecha exacta, mostramos el próximo hito que se
+  // viene (buscando por día del año, dando la vuelta si ya pasaron todos).
+  const hoyDiaAnio = diaDelAnio(dia, mes);
+  const ordenados = [...EFEMERIDES].sort((a, b) => diaDelAnio(a.dia, a.mes) - diaDelAnio(b.dia, b.mes));
+  const proxima = ordenados.find(e => diaDelAnio(e.dia, e.mes) > hoyDiaAnio) || ordenados[0];
+
+  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  wrap.innerHTML = `
+    <div class="efemeride proxima">
+      <div class="tag mono">Sin hitos registrados para hoy · próximo: ${proxima.dia} ${meses[proxima.mes - 1]}</div>
+      <div class="texto">${proxima.anio} — ${proxima.texto}</div>
+    </div>`;
+}
+
+function diaDelAnio(dia, mes){
+  return new Date(2001, mes - 1, dia).getTime(); // año arbitrario fijo, solo para ordenar
+}
+
+
 function renderTimeline(){
   const el = document.getElementById('timeline');
   el.innerHTML = TIMELINE.map((s,i) => `
@@ -962,6 +1031,7 @@ document.querySelectorAll('.tabbtn').forEach(btn => {
   });
 });
 
+renderEfemeride();
 renderTimeline();
 renderNicknames();
 renderHistoricSquads();
