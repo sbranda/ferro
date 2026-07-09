@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ferro-pwa-v2';
+const CACHE_NAME = 'ferro-pwa-v3';
 
 // App shell: mismo origen que la PWA.
 const APP_SHELL = [
@@ -16,6 +16,11 @@ const CROSS_ORIGIN_ASSETS = [
   'https://commons.wikimedia.org/wiki/Special:FilePath/Estadioferrocarriloeste.jpg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_Ferro_Carril_Oeste_platea.jpg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_de_Ferro_desde_el_puente.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Estadio_Ferro_Carril_Oeste_tribuna_Mart%C3%ADn_de_Gainza_1.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Cricketers_ferro_1912.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Club_ferro_carril_oeste_sede_social_1930.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Ferro_escudo_figurita_1958.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Bandera_de_Ferro_Carril_Oeste.png',
   'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap',
 ];
 
