@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ferro-pwa-v9';
+const CACHE_NAME = 'ferro-pwa-v10';
 
 // App shell: mismo origen que la PWA.
 const APP_SHELL = [
@@ -46,6 +46,11 @@ const CROSS_ORIGIN_ASSETS = [
   'https://commons.wikimedia.org/wiki/Special:FilePath/Logotipo%20Oficial%20y%20Escudo%20del%20Club%20Atl%C3%A9tico%20de%20Rafaela.svg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20San%20Martin%20de%20Tucum%C3%A1n.svg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20San%20Martin%20de%20San%20Juan.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Midland%20escudo.png',
+  'https://es.wikipedia.org/wiki/Special:FilePath/Club%20acassuso%20logo.png',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Deportivo%20Maipu.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Logo%20Club%20Atletico%20G%C3%BCemes%20de%20Santiago%20del%20Estero.svg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Gimnasia%20y%20Esgrima%20Jujuy.svg',
   'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;600;700;900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap',
 ];
 
