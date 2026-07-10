@@ -398,6 +398,11 @@
     <div class="eyebrow mono" style="margin-top:2.4rem;">A través de las épocas</div>
     <h2 class="disp" style="font-size:1.4rem;">Jugadores destacados</h2>
     <div id="destacados-wrap"></div>
+
+    <div class="eyebrow mono" style="margin-top:2.4rem;">Los que dirigieron al Verdolaga</div>
+    <h2 class="disp" style="font-size:1.4rem;">Directores técnicos</h2>
+    <div id="dts-wrap"></div>
+    <p class="mono" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Hubo 42 entrenadores registrados en la historia del club — estos son los mejor documentados. Fuente: Wikipedia.</p>
   </section>
 
   <section id="tab-plantel">
@@ -628,6 +633,17 @@ const TRIVIA = [
 ];
 
 // Jugadores destacados de distintas épocas de Ferro, con datos verificados.
+// Directores técnicos con datos y contexto bien documentados. No es la lista
+// completa (Wikipedia registra 42 nombres en total) — son los que tienen
+// fechas y logros confirmados en fuentes confiables.
+const DTS_HISTORICOS = [
+  { nombre: "Mario Fortunato", periodo: "Años '40", dato: "Contratado tras dirigir a Boca Juniors y Racing Club, considerado el entrenador más exitoso de la década del '30. Dirigió a Ferro en varias ocasiones." },
+  { nombre: "José Scalise", periodo: "1959", dato: "Asumió como entrenador de inferiores tras la renuncia de Perucca, con el equipo último en la tabla. Llevó a Ferro hasta un histórico 4° puesto." },
+  { nombre: "Carlos Timoteo Griguol", periodo: "1979–1985", dato: "El ciclo más exitoso de la historia del club: doble subcampeonato en 1981 y los dos títulos de Primera División, en 1982 y 1984." },
+  { nombre: "Sergio Rondina", periodo: "Hasta abril de 2026", dato: "Dirigió al equipo hasta su renuncia tras una derrota ante Estudiantes de Buenos Aires." },
+  { nombre: "Juan Manuel Sara", periodo: "Abril de 2026 — actualidad", dato: "Vuelve a Ferro para su segundo ciclo como DT (el primero fue en 2023), tras pasos por Deportivo Maipú y Estudiantes de Caseros." },
+];
+
 const JUGADORES_DESTACADOS = [
   { nombre: "Carlos Alberto \"El Goma\" Vidal", periodo: "1967–1979", dato: "Máximo goleador histórico oficial del club, con 108 goles. El propio Ferro lo reconoció en 2018 en un homenaje en la cancha." },
   { nombre: "Santiago Sayanes", periodo: "1916", dato: "Se convirtió en el primer verdolaga en jugar para la Selección Argentina de fútbol." },
@@ -846,6 +862,17 @@ function renderTimeline(){
 
 function renderNicknames(){
   document.getElementById('nicknames').innerHTML = NICKNAMES.map(n => `<span class="nickname mono">${n}</span>`).join('');
+}
+
+function renderDTs(){
+  const wrap = document.getElementById('dts-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = DTS_HISTORICOS.map(d => `
+    <div class="destacado-card">
+      <div class="nombre">${d.nombre}</div>
+      <div class="periodo mono">${d.periodo}</div>
+      <div class="dato">${d.dato}</div>
+    </div>`).join('');
 }
 
 function renderDestacados(){
@@ -1782,6 +1809,7 @@ renderTimeline();
 renderNicknames();
 renderHistoricSquads();
 renderDestacados();
+renderDTs();
 renderFilters();
 renderSquad();
 renderResults();
