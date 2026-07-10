@@ -194,6 +194,23 @@
     font-size:0.85rem; opacity:0.9;
   }
   .clima-icon{font-size:1.3rem;}
+  .prediccion{margin-top:1rem; padding-top:0.9rem; border-top:1px dashed rgba(241,236,221,0.2);}
+  .prediccion .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.5rem;}
+  .prediccion-form{display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;}
+  .prediccion-form input{
+    width:3rem; text-align:center; background:var(--bg); color:var(--paper);
+    border:1px solid var(--verde-nilo); padding:0.4rem; font-family:'IBM Plex Mono', monospace; font-size:1rem;
+  }
+  .prediccion-form span{color:var(--brass); font-weight:700;}
+  .prediccion-form button{
+    background:var(--verde-nilo); color:var(--paper); border:none; padding:0.5rem 0.9rem;
+    font-family:'IBM Plex Mono', monospace; font-size:0.78rem; cursor:pointer;
+  }
+  .prediccion-guardada{font-size:0.85rem;}
+  .prediccion-resultado{margin-top:0.5rem; font-size:0.85rem; padding:0.6rem 0.8rem;}
+  .prediccion-resultado.exacto{background:rgba(46,158,99,0.15); color:var(--verde-bright);}
+  .prediccion-resultado.parcial{background:rgba(201,160,74,0.15); color:var(--brass);}
+  .prediccion-resultado.fallo{background:rgba(156,74,43,0.15); color:#d98a6a;}
   .countdown-box .unit{border:1px solid rgba(241,236,221,0.25); padding:0.5rem 0.7rem; text-align:center; min-width:58px;}
   .countdown-box .unit .num{font-family:'Big Shoulders Display', sans-serif; font-size:1.5rem; font-weight:700; line-height:1;}
   .countdown-box .unit .lbl{font-size:0.65rem; color:var(--verde-bright); text-transform:uppercase; margin-top:0.2rem;}
@@ -869,6 +886,7 @@ function renderProximos(){
       <div class="mono" style="font-size:0.8rem; opacity:0.8; margin-top:0.2rem;">${p.dia} · ${p.dato || 'hora a confirmar'}</div>
       <div class="countdown-box" id="countdown-detail"></div>
       <div id="clima-wrap"></div>
+      <div id="prediccion-wrap"></div>
     </div>`;
 
   if (heroCard) {
@@ -885,6 +903,7 @@ function renderProximos(){
   startCountdown(p);
   renderRivales();
   fetchClima(p);
+  renderPrediccion(p);
 }
 
 // ---------- CLIMA DEL DÍA DEL PARTIDO ----------
@@ -943,6 +962,105 @@ async function fetchClima(proximo){
     console.warn('No se pudo traer el clima:', err);
     wrap.innerHTML = '';
   }
+}
+
+// ---------- PREDICCIÓN DEL RESULTADO ----------
+// Se guarda solo en este celular (localStorage), nunca se manda a ningún
+// servidor. La clave identifica el partido por rival + fecha, así que sirve
+// para un solo próximo partido a la vez.
+const PREDICCION_KEY = 'ferro_prediccion';
+
+function partidoId(p){
+  return `${normalizar(p.rival)}|${p.dia}`;
+}
+
+function getPrediccionGuardada(){
+  try {
+    const raw = localStorage.getItem(PREDICCION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function guardarPrediccion(id, golFerro, golRival){
+  localStorage.setItem(PREDICCION_KEY, JSON.stringify({ id, golFerro, golRival, resuelta: false }));
+}
+
+function renderPrediccion(proximo){
+  const wrap = document.getElementById('prediccion-wrap');
+  if (!wrap) return;
+  const id = partidoId(proximo);
+  const guardada = getPrediccionGuardada();
+
+  // Ya hay una predicción guardada para ESTE partido puntual
+  if (guardada && guardada.id === id) {
+    wrap.innerHTML = `
+      <div class="prediccion">
+        <div class="label mono">Tu predicción</div>
+        <div class="prediccion-guardada mono">Ferro ${guardada.golFerro} - ${guardada.golRival} ${proximo.rival}</div>
+      </div>`;
+    return;
+  }
+
+  // No hay predicción para este partido todavía: mostrar el formulario
+  wrap.innerHTML = `
+    <div class="prediccion">
+      <div class="label mono">¿Cómo termina?</div>
+      <div class="prediccion-form">
+        <span class="mono">Ferro</span>
+        <input type="number" min="0" max="20" id="pred-ferro" inputmode="numeric">
+        <span>-</span>
+        <input type="number" min="0" max="20" id="pred-rival" inputmode="numeric">
+        <span class="mono">${proximo.rival}</span>
+        <button id="pred-guardar">Guardar</button>
+      </div>
+    </div>`;
+
+  document.getElementById('pred-guardar').addEventListener('click', () => {
+    const gf = document.getElementById('pred-ferro').value;
+    const gr = document.getElementById('pred-rival').value;
+    if (gf === '' || gr === '') return;
+    guardarPrediccion(id, Number(gf), Number(gr));
+    renderPrediccion(proximo);
+  });
+}
+
+// Compara la predicción guardada contra un resultado real ya publicado, y
+// muestra si acertaste el marcador exacto, el resultado (G/E/P), o ninguno.
+// Se llama cada vez que llegan resultados nuevos del Worker.
+function chequearPrediccion(){
+  const guardada = getPrediccionGuardada();
+  if (!guardada || guardada.resuelta) return;
+
+  const real = RESULTS.find(r => `${normalizar(r.rival)}|${r.date}` === guardada.id);
+  if (!real) return; // el partido todavía no se jugó (o no está en los resultados recientes)
+
+  const m = /^(\d+)\s*-\s*(\d+)$/.exec((real.score || '').trim());
+  if (!m) return;
+  const [, gfReal, grReal] = m.map(Number);
+
+  const exacto = guardada.golFerro === gfReal && guardada.golRival === grReal;
+  const resultadoPredicho = guardada.golFerro > guardada.golRival ? 'G' : guardada.golFerro < guardada.golRival ? 'P' : 'E';
+  const resultadoReal = gfReal > grReal ? 'G' : gfReal < grReal ? 'P' : 'E';
+  const acertoResultado = resultadoPredicho === resultadoReal;
+
+  guardada.resuelta = true;
+  guardada.acierto = exacto ? 'exacto' : acertoResultado ? 'parcial' : 'fallo';
+  guardada.real = `${gfReal}-${grReal}`;
+  localStorage.setItem(PREDICCION_KEY, JSON.stringify(guardada));
+
+  const wrap = document.getElementById('prediccion-wrap');
+  if (!wrap) return;
+  const mensajes = {
+    exacto: '🎯 ¡Le diste justo al marcador!',
+    parcial: '👍 Acertaste el resultado, el marcador no fue exacto.',
+    fallo: '❌ Esta vez no acertaste.',
+  };
+  wrap.innerHTML = `
+    <div class="prediccion">
+      <div class="label mono">Tu predicción</div>
+      <div class="prediccion-guardada mono">Vos dijiste ${guardada.golFerro}-${guardada.golRival} · Terminó ${guardada.real}</div>
+      <div class="prediccion-resultado ${guardada.acierto}">${mensajes[guardada.acierto]}</div>
+    </div>`;
 }
 
 // Tarjetas de próximos rivales, cada una con un botón que abre una búsqueda
@@ -1142,6 +1260,7 @@ async function fetchLiveData(){
       PROXIMOS = data.proximos;
       renderProximos();
     }
+    chequearPrediccion();
     if (fuenteEl) {
       const actualizado = data.actualizado ? new Date(data.actualizado).toLocaleString('es-AR') : '';
       fuenteEl.textContent = `Datos en vivo desde Promiedos · actualizado ${actualizado}`;
