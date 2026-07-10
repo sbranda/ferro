@@ -721,9 +721,12 @@ function renderFilters(){
 function renderSquad(){
   const list = squadFilter === 'todos' ? SQUAD : SQUAD.filter(p => p.pos === squadFilter);
   document.getElementById('squadgrid').innerHTML = list.map(p => `
-    <div class="player">
-      <div class="name">${p.name}</div>
-      <div class="detail mono">${p.detail} · ${p.age} años</div>
+    <div class="player" style="display:flex; align-items:center; gap:0.7rem;">
+      <div style="width:40px; height:40px; border-radius:50%; background:var(--verde-deep); border:1px solid var(--verde-nilo); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:0.85rem; color:var(--verde-bright); flex-shrink:0;">${iniciales(p.name)}</div>
+      <div>
+        <div class="name">${p.name}</div>
+        <div class="detail mono">${p.detail} · ${p.age} años</div>
+      </div>
     </div>`).join('');
 }
 
