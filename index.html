@@ -21,8 +21,19 @@
   :root{
     --bg:#0d1f16; --bg-alt:#122d1f; --paper:#f1ecdd;
     --verde-nilo:#1f7a4d; --verde-bright:#2e9e63; --verde-deep:#123924;
-    --rust:#9c4a2b; --brass:#c9a04a; --line:rgba(241,236,221,0.16);
+    --rust:#9c4a2b; --brass:#c9a04a; --line:rgba(var(--paper-rgb),0.16);
+    --bg-rgb:13,31,22; --paper-rgb:241,236,221; --verde-bright-rgb:46,158,99;
+    --brass-rgb:201,160,74; --rust-rgb:156,74,43; --rust-text:#d98a6a;
   }
+  [data-theme="light"]{
+    --bg:#f5f0e3; --bg-alt:#ece3cc; --paper:#171f16;
+    --verde-nilo:#1c6e46; --verde-bright:#146b3d; --verde-deep:#dcecdf;
+    --rust:#8a3f24; --brass:#8a6414; --line:rgba(23,31,22,0.14);
+    --bg-rgb:245,240,227; --paper-rgb:23,31,22; --verde-bright-rgb:20,107,61;
+    --brass-rgb:138,100,20; --rust-rgb:138,63,36; --rust-text:#7a3018;
+  }
+  [data-theme="light"] img.photo{filter:none;}
+  [data-theme="light"] .station-sign{box-shadow:0 0 0 6px var(--verde-nilo), 0 20px 50px rgba(0,0,0,0.15);}
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{margin:0; background:var(--bg); color:var(--paper); font-family:'Source Serif 4', Georgia, serif; line-height:1.6; -webkit-font-smoothing:antialiased;}
@@ -35,7 +46,7 @@
   header.hero{
     min-height:78vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
     text-align:center; padding:3rem 1.25rem; position:relative;
-    background-image:linear-gradient(rgba(13,31,22,0.72), rgba(13,31,22,0.92)),
+    background-image:linear-gradient(rgba(var(--bg-rgb),0.72), rgba(var(--bg-rgb),0.92)),
       url('https://commons.wikimedia.org/wiki/Special:FilePath/Estadioferrocarriloeste.jpg');
     background-size:cover; background-position:center;
   }
@@ -67,13 +78,13 @@
 
   /* timeline */
   .efemeride{
-    border:1px solid var(--brass); background:rgba(201,160,74,0.08);
+    border:1px solid var(--brass); background:rgba(var(--brass-rgb),0.08);
     padding:1.1rem 1.3rem; margin-bottom:1.8rem;
   }
   .efemeride .tag{font-size:0.7rem; color:var(--brass); text-transform:uppercase; letter-spacing:0.08em;}
   .efemeride .titulo{font-family:'Big Shoulders Display', sans-serif; font-size:1.2rem; margin-top:0.3rem;}
   .efemeride .texto{font-size:0.9rem; opacity:0.9; margin-top:0.3rem;}
-  .efemeride.proxima{border-color:rgba(241,236,221,0.25); background:transparent;}
+  .efemeride.proxima{border-color:rgba(var(--paper-rgb),0.25); background:transparent;}
   .efemeride.proxima .tag{color:var(--verde-bright);}
   .timeline{position:relative; padding-left:2.2rem; margin-top:2rem;}
   .timeline::before{content:""; position:absolute; left:0.5rem; top:0.3rem; bottom:0.3rem; width:6px;
@@ -82,7 +93,7 @@
   .dot{position:absolute; left:-2.2rem; top:0.35rem; width:1.2rem; height:1.2rem; border-radius:50%; background:var(--verde-nilo); border:3px solid var(--paper);}
   .stop.open .dot{background:var(--verde-bright);}
   .stopbtn{width:100%; text-align:left; padding:0.5rem 0.7rem;}
-  .stopbtn:hover{background:rgba(46,158,99,0.08);}
+  .stopbtn:hover{background:rgba(var(--verde-bright-rgb),0.08);}
   .stopbtn .yr{color:var(--brass); font-size:0.95rem; display:block;}
   .stopbtn .ti{font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase; font-size:1.25rem;}
   .stop .body{display:none; padding:0 0.7rem; margin:0.4rem 0 0;}
@@ -108,7 +119,7 @@
   /* historic squads */
   .squadcard{border:1px solid var(--line); margin-bottom:0.6rem;}
   .squadbtn{width:100%; padding:1rem 1.2rem; display:flex; justify-content:space-between; align-items:center; gap:1rem;}
-  .squadbtn:hover{background:rgba(46,158,99,0.08);}
+  .squadbtn:hover{background:rgba(var(--verde-bright-rgb),0.08);}
   .squadbtn .yr{color:var(--brass); font-size:0.9rem; display:block;}
   .squadbtn .ti{font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase; font-size:1.25rem;}
   .squadbtn .plus{color:var(--verde-bright); font-size:1.2rem;}
@@ -123,7 +134,7 @@
     background:transparent; border:1px solid var(--verde-nilo); color:var(--paper);
     padding:0.7rem 0.9rem; font-size:0.9rem;
   }
-  #jugador-search::placeholder{color:rgba(241,236,221,0.45);}
+  #jugador-search::placeholder{color:rgba(var(--paper-rgb),0.45);}
   #jugador-search:focus{outline:none; border-color:var(--verde-bright);}
   .jugador-hit{
     border:1px solid var(--line); padding:0.7rem 0.9rem; margin-bottom:0.5rem;
@@ -134,7 +145,7 @@
   .bg-hit{
     border:1px solid var(--line); padding:0.8rem 1rem; margin-bottom:0.5rem; cursor:pointer;
   }
-  .bg-hit:hover{border-color:var(--verde-bright); background:rgba(46,158,99,0.06);}
+  .bg-hit:hover{border-color:var(--verde-bright); background:rgba(var(--verde-bright-rgb),0.06);}
   .bg-hit .titulo{font-weight:600;}
   .bg-hit .snippet{font-size:0.82rem; opacity:0.75; margin-top:0.25rem;}
   .jugador-hit .nombre{font-weight:600;}
@@ -149,12 +160,12 @@
   .trivia-pregunta{font-size:1.05rem; margin-bottom:1rem;}
   .trivia-opciones{display:flex; flex-direction:column; gap:0.5rem;}
   .trivia-opcion{
-    background:transparent; border:1px solid rgba(241,236,221,0.25); color:var(--paper);
+    background:transparent; border:1px solid rgba(var(--paper-rgb),0.25); color:var(--paper);
     padding:0.7rem 0.9rem; text-align:left; font-size:0.9rem; cursor:pointer; border-radius:2px;
   }
   .trivia-opcion:hover:not(:disabled){border-color:var(--verde-bright);}
-  .trivia-opcion.correcta{background:rgba(46,158,99,0.2); border-color:var(--verde-bright); color:var(--verde-bright);}
-  .trivia-opcion.incorrecta{background:rgba(156,74,43,0.2); border-color:#9c4a2b; color:#d98a6a;}
+  .trivia-opcion.correcta{background:rgba(var(--verde-bright-rgb),0.2); border-color:var(--verde-bright); color:var(--verde-bright);}
+  .trivia-opcion.incorrecta{background:rgba(var(--rust-rgb),0.2); border-color:var(--rust); color:var(--rust-text);}
   .trivia-opcion:disabled{cursor:default;}
   .trivia-siguiente{margin-top:1rem; background:var(--verde-nilo); color:var(--paper); border:none; padding:0.6rem 1rem; font-family:'IBM Plex Mono', monospace; font-size:0.82rem; cursor:pointer;}
   .filterbtn{padding:0.5rem 1rem; font-size:0.8rem; border:1px solid var(--verde-nilo); color:var(--verde-bright);}
@@ -168,7 +179,7 @@
   .standing{background:var(--verde-deep); border:1px solid var(--verde-nilo); padding:1rem 1.4rem; margin-bottom:1.6rem;
     display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;}
   .standing .pos{color:var(--brass);}
-  .proximo{border:1px solid var(--brass); background:rgba(201,160,74,0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
+  .proximo{border:1px solid var(--brass); background:rgba(var(--brass-rgb),0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
   .racha{margin-bottom:1.4rem;}
   .compartir-btn{
     display:inline-flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;
@@ -185,13 +196,13 @@
   }
   .rival-card .info .name{font-weight:600;}
   .rival-card .info .apodo{font-size:0.75rem; color:var(--brass); cursor:help; margin-top:0.1rem;}
-  .rival-card .info .when{font-size:0.78rem; color:rgba(241,236,221,0.65); margin-top:0.15rem;}
+  .rival-card .info .when{font-size:0.78rem; color:rgba(var(--paper-rgb),0.65); margin-top:0.15rem;}
   .rival-btn{
     font-size:0.75rem; text-decoration:none; color:var(--verde-bright);
     border:1px solid var(--verde-nilo); padding:0.4rem 0.8rem; white-space:nowrap;
     font-family:'IBM Plex Mono', monospace;
   }
-  .rival-btn:hover{background:rgba(46,158,99,0.12);}
+  .rival-btn:hover{background:rgba(var(--verde-bright-rgb),0.12);}
   .racha .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.5rem;}
   .racha-icons{display:flex; gap:0.5rem;}
   .racha-icon{
@@ -208,8 +219,8 @@
   .countdown-hero{margin-top:1rem; font-size:0.85rem; color:var(--paper); opacity:0.9; min-height:1.2em;}
   .hero-proximo{
     margin-top:1.6rem;
-    border:1px solid rgba(241,236,221,0.3);
-    background:rgba(13,31,22,0.55);
+    border:1px solid rgba(var(--paper-rgb),0.3);
+    background:rgba(var(--bg-rgb),0.55);
     padding:1rem 1.6rem;
     display:inline-flex;
     flex-direction:column;
@@ -227,7 +238,7 @@
     font-size:0.85rem; opacity:0.9;
   }
   .clima-icon{font-size:1.3rem;}
-  .prediccion{margin-top:1rem; padding-top:0.9rem; border-top:1px dashed rgba(241,236,221,0.2);}
+  .prediccion{margin-top:1rem; padding-top:0.9rem; border-top:1px dashed rgba(var(--paper-rgb),0.2);}
   .prediccion .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.5rem;}
   .prediccion-form{display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;}
   .prediccion-form input{
@@ -241,15 +252,15 @@
   }
   .prediccion-guardada{font-size:0.85rem;}
   .prediccion-resultado{margin-top:0.5rem; font-size:0.85rem; padding:0.6rem 0.8rem;}
-  .prediccion-resultado.exacto{background:rgba(46,158,99,0.15); color:var(--verde-bright);}
-  .prediccion-resultado.parcial{background:rgba(201,160,74,0.15); color:var(--brass);}
-  .prediccion-resultado.fallo{background:rgba(156,74,43,0.15); color:#d98a6a;}
-  .countdown-box .unit{border:1px solid rgba(241,236,221,0.25); padding:0.5rem 0.7rem; text-align:center; min-width:58px;}
+  .prediccion-resultado.exacto{background:rgba(var(--verde-bright-rgb),0.15); color:var(--verde-bright);}
+  .prediccion-resultado.parcial{background:rgba(var(--brass-rgb),0.15); color:var(--brass);}
+  .prediccion-resultado.fallo{background:rgba(var(--rust-rgb),0.15); color:var(--rust-text);}
+  .countdown-box .unit{border:1px solid rgba(var(--paper-rgb),0.25); padding:0.5rem 0.7rem; text-align:center; min-width:58px;}
   .countdown-box .unit .num{font-family:'Big Shoulders Display', sans-serif; font-size:1.5rem; font-weight:700; line-height:1;}
   .countdown-box .unit .lbl{font-size:0.65rem; color:var(--verde-bright); text-transform:uppercase; margin-top:0.2rem;}
-  .rrow{display:flex; align-items:center; gap:1rem; padding:0.7rem 0.5rem; border-bottom:1px solid rgba(241,236,221,0.1);}
-  .rrow:hover{background:rgba(46,158,99,0.06);}
-  .rrow .date{font-size:0.75rem; color:rgba(241,236,221,0.5); width:48px;}
+  .rrow{display:flex; align-items:center; gap:1rem; padding:0.7rem 0.5rem; border-bottom:1px solid rgba(var(--paper-rgb),0.1);}
+  .rrow:hover{background:rgba(var(--verde-bright-rgb),0.06);}
+  .rrow .date{font-size:0.75rem; color:rgba(var(--paper-rgb),0.5); width:48px;}
   .rrow .cond{font-size:0.7rem; color:var(--brass); width:18px;}
   .rrow .rival{flex:1;}
   .rrow .score{background:var(--verde-bright); color:var(--bg); padding:0.2rem 0.6rem; font-weight:600; min-width:44px; text-align:center;}
@@ -259,8 +270,8 @@
   .standings-table{width:100%; border-collapse:collapse; font-size:0.82rem;}
   .standings-table th{font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color:var(--verde-bright); text-transform:uppercase; text-align:center; padding:0.4rem 0.3rem; border-bottom:1px solid var(--line);}
   .standings-table th:first-child, .standings-table td:first-child{text-align:left; padding-left:0;}
-  .standings-table td{text-align:center; padding:0.45rem 0.3rem; border-bottom:1px solid rgba(241,236,221,0.08);}
-  .standings-table tr.me{background:rgba(46,158,99,0.15);}
+  .standings-table td{text-align:center; padding:0.45rem 0.3rem; border-bottom:1px solid rgba(var(--paper-rgb),0.08);}
+  .standings-table tr.me{background:rgba(var(--verde-bright-rgb),0.15);}
   .standings-table tr.me td{color:var(--paper); font-weight:600;}
   .comparador{margin-top:2.4rem; border-top:1px solid var(--line); padding-top:1.6rem;}
   .comparador-selects{display:flex; align-items:center; gap:0.8rem; margin-top:0.8rem; flex-wrap:wrap;}
@@ -271,7 +282,7 @@
   .comparador-vs{color:var(--brass); font-size:0.8rem;}
   .comp-table{width:100%; border-collapse:collapse; margin-top:1.2rem; font-size:0.85rem;}
   .comp-table th{font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color:var(--verde-bright); text-transform:uppercase; padding:0.4rem; border-bottom:1px solid var(--line); text-align:center;}
-  .comp-table td{padding:0.5rem 0.4rem; text-align:center; border-bottom:1px solid rgba(241,236,221,0.08);}
+  .comp-table td{padding:0.5rem 0.4rem; text-align:center; border-bottom:1px solid rgba(var(--paper-rgb),0.08);}
   .comp-table td.stat-label{text-align:left; color:var(--verde-bright); font-family:'IBM Plex Mono', monospace; font-size:0.72rem; text-transform:uppercase;}
   .comp-table .team-header{display:flex; flex-direction:column; align-items:center; gap:0.4rem;}
   .comp-table .team-header .name{font-size:0.78rem; max-width:110px;}
@@ -313,6 +324,7 @@
   <button class="tabbtn mono" data-tab="resultados">Resultados</button>
   <button class="tabbtn mono" data-tab="visitanos">Visitanos</button>
   <button class="mono" id="buscar-global-btn" title="Buscar en toda la app" style="background:transparent; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.5rem 0.8rem; font-size:0.9rem; cursor:pointer;">🔍</button>
+  <button class="mono" id="theme-toggle-btn" title="Cambiar tema claro/oscuro" style="background:transparent; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.5rem 0.8rem; font-size:0.9rem; cursor:pointer;">🌙</button>
 </nav>
 
 <div id="buscar-global-overlay" style="display:none; position:fixed; inset:0; background:rgba(13,31,22,0.97); z-index:100; overflow-y:auto;">
@@ -410,7 +422,7 @@
         <p class="mono" style="font-size:0.72rem; opacity:0.55; margin-top:0.4rem;">1958 — figurita de época con el escudo</p>
       </div>
       <div>
-        <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Bandera_de_Ferro_Carril_Oeste.png" alt="Bandera del Club Ferro Carril Oeste" loading="lazy" style="object-fit:contain; background:#0d1f16;">
+        <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Bandera_de_Ferro_Carril_Oeste.png" alt="Bandera del Club Ferro Carril Oeste" loading="lazy" style="object-fit:contain; background:var(--bg);">
         <p class="mono" style="font-size:0.72rem; opacity:0.55; margin-top:0.4rem;">La bandera del club, con los colores verdolagas</p>
       </div>
     </div>
@@ -1821,8 +1833,8 @@ function renderLiveStatus(){
   const heroEl = document.getElementById('countdown-hero');
   const detailEl = document.getElementById('countdown-detail');
   const text = liveStatusText ? `⚽ ${liveStatusText}` : '⚽ Ferro está jugando ahora';
-  if (heroEl) heroEl.innerHTML = `<span class="mono" style="color:#c9a04a;">${text}</span>`;
-  if (detailEl) detailEl.innerHTML = `<span class="mono" style="color:#c9a04a;">${text}</span>`;
+  if (heroEl) heroEl.innerHTML = `<span class="mono" style="color:var(--brass);">${text}</span>`;
+  if (detailEl) detailEl.innerHTML = `<span class="mono" style="color:var(--brass);">${text}</span>`;
 }
 
 // Trae fixture y resultados en vivo desde el Worker de Cloudflare (worker.js).
@@ -2055,6 +2067,31 @@ document.querySelectorAll('.tabbtn').forEach(btn => {
     if (btn.dataset.tab === 'resultados') markResultsAsSeen();
   });
 });
+
+// ---------- TEMA CLARO / OSCURO ----------
+const THEME_KEY = 'ferro_theme';
+
+function aplicarTema(tema){
+  if (tema === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('theme-toggle-btn').textContent = '☀️';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('theme-toggle-btn').textContent = '🌙';
+  }
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.setAttribute('content', tema === 'light' ? '#f5f0e3' : '#0d1f16');
+}
+
+function alternarTema(){
+  const actual = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
+  const nuevo = actual === 'light' ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, nuevo);
+  aplicarTema(nuevo);
+}
+
+aplicarTema(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
+document.getElementById('theme-toggle-btn').addEventListener('click', alternarTema);
 
 renderEfemeride();
 renderTrivia();
