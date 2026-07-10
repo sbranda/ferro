@@ -325,6 +325,8 @@
   <button class="tabbtn mono" data-tab="visitanos">Visitanos</button>
   <button class="mono" id="buscar-global-btn" title="Buscar en toda la app" style="background:transparent; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.5rem 0.8rem; font-size:0.9rem; cursor:pointer;">🔍</button>
   <button class="mono" id="theme-toggle-btn" title="Cambiar tema claro/oscuro" style="background:transparent; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.5rem 0.8rem; font-size:0.9rem; cursor:pointer;">🌙</button>
+  <button class="mono" id="font-menos-btn" title="Achicar letra" style="background:transparent; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.5rem 0.7rem; font-size:0.8rem; cursor:pointer;">A-</button>
+  <button class="mono" id="font-mas-btn" title="Agrandar letra" style="background:transparent; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.5rem 0.7rem; font-size:1.05rem; cursor:pointer;">A+</button>
 </nav>
 
 <div id="buscar-global-overlay" style="display:none; position:fixed; inset:0; background:rgba(13,31,22,0.97); z-index:100; overflow-y:auto;">
@@ -2092,6 +2094,28 @@ function alternarTema(){
 
 aplicarTema(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
 document.getElementById('theme-toggle-btn').addEventListener('click', alternarTema);
+
+// ---------- TAMAÑO DE LETRA ----------
+// Como casi todo el CSS de la app está en rem, cambiar el font-size del
+// <html> escala toda la interfaz de forma proporcional.
+const FONT_KEY = 'ferro_font_scale';
+const FONT_PASOS = [87.5, 100, 112.5, 125, 137.5]; // porcentajes
+
+function aplicarFontScale(pct){
+  document.documentElement.style.fontSize = pct + '%';
+  localStorage.setItem(FONT_KEY, String(pct));
+}
+
+function cambiarFontScale(delta){
+  const actual = Number(localStorage.getItem(FONT_KEY)) || 100;
+  const idx = FONT_PASOS.indexOf(actual);
+  const nuevoIdx = Math.min(FONT_PASOS.length - 1, Math.max(0, (idx === -1 ? 1 : idx) + delta));
+  aplicarFontScale(FONT_PASOS[nuevoIdx]);
+}
+
+aplicarFontScale(Number(localStorage.getItem(FONT_KEY)) || 100);
+document.getElementById('font-menos-btn').addEventListener('click', () => cambiarFontScale(-1));
+document.getElementById('font-mas-btn').addEventListener('click', () => cambiarFontScale(1));
 
 renderEfemeride();
 renderTrivia();
