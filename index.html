@@ -353,6 +353,7 @@
       <span class="pos mono">1° puesto · 37 pts (tras la fecha 19)</span>
     </div>
     <div id="racha-wrap"></div>
+    <div id="racha-lv-wrap"></div>
     <div id="proximo-wrap"></div>
     <div id="rivales-wrap"></div>
     <div id="results"></div>
@@ -787,6 +788,34 @@ function renderRacha(){
       <div class="label mono">Racha (últimos ${ultimos.length})</div>
       <div class="racha-icons">${icons}</div>
     </div>`;
+  renderRachaLocalVisitante();
+}
+
+// Misma racha de arriba, pero separada en los últimos partidos de local y los
+// últimos de visitante — usando el campo "cond" (L/V) que ya viene en cada
+// resultado, sin necesitar ningún dato nuevo.
+function renderRachaFila(cond, etiqueta){
+  const labels = { g: 'G', e: 'E', p: 'P' };
+  const partidos = RESULTS.filter(r => r.cond === cond).slice(0, 5).reverse();
+  if (!partidos.length) return '';
+  const icons = partidos.map(r => {
+    const letra = resultLetter(r.score);
+    if (!letra) return '';
+    return `<div class="racha-icon ${letra}" title="${r.rival}: ${r.score}">${labels[letra]}</div>`;
+  }).join('');
+  return `
+    <div class="racha">
+      <div class="label mono">${etiqueta} (últimos ${partidos.length})</div>
+      <div class="racha-icons">${icons}</div>
+    </div>`;
+}
+
+function renderRachaLocalVisitante(){
+  const wrap = document.getElementById('racha-lv-wrap');
+  if (!wrap) return;
+  const local = renderRachaFila('L', 'De local');
+  const visitante = renderRachaFila('V', 'De visitante');
+  wrap.innerHTML = local + visitante;
 }
 
 function renderProximos(){
