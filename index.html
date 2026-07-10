@@ -132,6 +132,10 @@
   .jugador-hit .nombre{font-weight:600;}
   .jugador-hit .contexto{font-size:0.78rem; color:var(--verde-bright); font-family:'IBM Plex Mono', monospace;}
   .jugador-sin{font-size:0.85rem; opacity:0.6; margin-bottom:1rem;}
+  .destacado-card{border:1px solid var(--line); padding:0.9rem 1.1rem; margin-bottom:0.6rem;}
+  .destacado-card .nombre{font-weight:600; font-size:1rem;}
+  .destacado-card .periodo{font-size:0.72rem; color:var(--brass); font-family:'IBM Plex Mono', monospace; text-transform:uppercase; margin-top:0.15rem;}
+  .destacado-card .dato{font-size:0.88rem; opacity:0.85; margin-top:0.4rem;}
   .trivia-card{border:1px solid var(--verde-nilo); padding:1.2rem; margin-top:1rem;}
   .trivia-score{font-size:0.75rem; color:var(--brass); margin-bottom:0.8rem;}
   .trivia-pregunta{font-size:1.05rem; margin-bottom:1rem;}
@@ -390,6 +394,10 @@
 
     <div id="historic-squads"></div>
     <p class="mono" style="font-size:0.78rem; opacity:0.55; margin-top:1.4rem;">Fuentes: Wikipedia, CIHF, El Gráfico, Infobae y el sitio oficial del club.</p>
+
+    <div class="eyebrow mono" style="margin-top:2.4rem;">A través de las épocas</div>
+    <h2 class="disp" style="font-size:1.4rem;">Jugadores destacados</h2>
+    <div id="destacados-wrap"></div>
   </section>
 
   <section id="tab-plantel">
@@ -616,6 +624,22 @@ const TRIVIA = [
   { pregunta: "¿Cuál de estos NO es un apodo de Ferro?", opciones: ["Tren Verde", "El Rápido", "La Locomotora del Oeste", "El Fortín"], correcta: 3 },
 ];
 
+// Jugadores destacados de distintas épocas de Ferro, con datos verificados.
+const JUGADORES_DESTACADOS = [
+  { nombre: "Santiago Sayanes", periodo: "1916", dato: "Se convirtió en el primer verdolaga en jugar para la Selección Argentina de fútbol." },
+  { nombre: "Los Cinco Mosqueteros", periodo: "Años '30", dato: "Gandulla, Maril, Emeal, Borgnia y Sarlanga: la delantera juvenil que subió de las inferiores y deslumbró al fútbol argentino." },
+  { nombre: "José Manuel Moreno", periodo: "1953", dato: "Considerado por muchos el mejor futbolista argentino de la historia, jugó su última temporada como profesional vistiendo los colores de Ferro." },
+  { nombre: "Silvio Marzolini", periodo: "Años '60", dato: "Ídolo de Boca y de la Selección Argentina, pasó por las filas de Ferro." },
+  { nombre: "Antonio Roma", periodo: "Años '60", dato: "Arquero histórico del fútbol argentino que también vistió la camiseta de Ferro." },
+  { nombre: "Gerónimo \"Cacho\" Saccardi", periodo: "1970–1979", dato: "Ídolo indiscutido: subió desde las inferiores repartiendo diarios y trabajando en una casa de repuestos. Volvió a Caballito tras jugar en España y fue ovacionado por la gente." },
+  { nombre: "Roberto Mouzo", periodo: "Años '70", dato: "Defensor central, parte fundamental del equipo que logró el ascenso a Primera División en 1978." },
+  { nombre: "Carlos Timoteo Griguol", periodo: "Jugador y DT", dato: "Se destacó como jugador y después fue el entrenador de los dos títulos de Primera División (1982 y 1984)." },
+  { nombre: "Carlos Barisio", periodo: "1981–1982", dato: "Arquero del plantel campeón de 1982. Estableció un récord del fútbol argentino, vigente hasta hoy: 1075 minutos sin recibir un gol." },
+  { nombre: "Claudio Borghi", periodo: "Años '80", dato: "Mediocampista ofensivo formado en las inferiores de Ferro, luego convocado a la Selección Argentina." },
+  { nombre: "Guillermo Barros Schelotto", periodo: "Años '90", dato: "Delantero que debutó en Ferro, parte del plantel que ascendió a Primera División en 1995." },
+  { nombre: "Fabián Cubero", periodo: "Paso por Ferro", dato: "Aunque jugó la mayor parte de su carrera en Vélez Sarsfield, también tuvo un paso por Ferro." },
+];
+
 const HISTORIC_SQUADS = [
   { year:"1904", title:"El primer equipo",
     context:"Debut oficioso del club, derrota 3-1 ante Flores AC el 4 de septiembre de 1904, apenas un mes después de la fundación.",
@@ -820,6 +844,17 @@ function renderNicknames(){
   document.getElementById('nicknames').innerHTML = NICKNAMES.map(n => `<span class="nickname mono">${n}</span>`).join('');
 }
 
+function renderDestacados(){
+  const wrap = document.getElementById('destacados-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = JUGADORES_DESTACADOS.map(j => `
+    <div class="destacado-card">
+      <div class="nombre">${j.nombre}</div>
+      <div class="periodo mono">${j.periodo}</div>
+      <div class="dato">${j.dato}</div>
+    </div>`).join('');
+}
+
 function renderHistoricSquads(){
   const el = document.getElementById('historic-squads');
   el.innerHTML = HISTORIC_SQUADS.map((sq,i) => `
@@ -869,6 +904,12 @@ function buscarJugadores(query){
   SQUAD.forEach(p => {
     if (normalizar(p.name).includes(q)) {
       hits.push({ nombre: p.name, contexto: `Plantel actual · ${p.detail}` });
+    }
+  });
+
+  JUGADORES_DESTACADOS.forEach(j => {
+    if (normalizar(j.nombre).includes(q)) {
+      hits.push({ nombre: j.nombre, contexto: `Destacado · ${j.periodo}` });
     }
   });
 
@@ -1731,6 +1772,7 @@ renderTrivia();
 renderTimeline();
 renderNicknames();
 renderHistoricSquads();
+renderDestacados();
 renderFilters();
 renderSquad();
 renderResults();
