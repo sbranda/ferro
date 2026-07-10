@@ -145,6 +145,12 @@
   .standing .pos{color:var(--brass);}
   .proximo{border:1px solid var(--brass); background:rgba(201,160,74,0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
   .racha{margin-bottom:1.4rem;}
+  .compartir-btn{
+    display:flex; align-items:center; gap:0.5rem; margin-bottom:1.4rem;
+    background:var(--verde-nilo); color:var(--paper); border:none;
+    padding:0.6rem 1rem; font-family:'IBM Plex Mono', monospace; font-size:0.82rem; cursor:pointer;
+  }
+  .compartir-btn:hover{background:var(--verde-bright); color:var(--bg);}
   .rivales{margin-top:1.8rem;}
   .rivales .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.6rem;}
   .rival-card{
@@ -387,6 +393,7 @@
     <div id="racha-lv-wrap"></div>
     <div id="proximo-wrap"></div>
     <div id="rivales-wrap"></div>
+    <div id="compartir-wrap"></div>
     <div id="results"></div>
     <p class="mono" id="fuente-datos" style="font-size:0.78rem; opacity:0.55; margin-top:1rem;">Fuente: LA NACION / Canchallena, fechas 12 a 19 del torneo (datos fijos).</p>
 
@@ -801,6 +808,119 @@ function renderResults(){
       <span class="scorers">${r.scorers}</span>
     </div>`).join('');
   renderRacha();
+  renderCompartir();
+}
+
+// ---------- COMPARTIR TARJETA DE RESULTADO ----------
+// Arma una imagen con el último resultado usando <canvas>, todo en el
+// celular (sin servidor), y la comparte con la función nativa del celular
+// (o la descarga, si el navegador no soporta compartir archivos).
+function renderCompartir(){
+  const wrap = document.getElementById('compartir-wrap');
+  if (!wrap) return;
+  if (!RESULTS.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = `<button class="compartir-btn mono" id="compartir-btn">📤 Compartir último resultado</button>`;
+  document.getElementById('compartir-btn').addEventListener('click', compartirResultado);
+}
+
+function cargarImagen(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function compartirResultado(){
+  const btn = document.getElementById('compartir-btn');
+  const textoOriginal = btn.textContent;
+  btn.textContent = 'Armando imagen…';
+  btn.disabled = true;
+
+  try {
+    const r = RESULTS[0];
+    const letra = resultLetter(r.score);
+    const colorResultado = { g: '#2e9e63', e: '#c9a04a', p: '#9c4a2b' }[letra] || '#2e9e63';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 900;
+    canvas.height = 900;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo
+    ctx.fillStyle = '#0d1f16';
+    ctx.fillRect(0, 0, 900, 900);
+    ctx.strokeStyle = colorResultado;
+    ctx.lineWidth = 10;
+    ctx.strokeRect(20, 20, 860, 860);
+
+    // Título
+    ctx.fillStyle = '#2e9e63';
+    ctx.font = '600 28px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText((r.cond === 'L' ? 'DE LOCAL' : 'DE VISITANTE') + ' · PRIMERA NACIONAL', 450, 100);
+
+    // Escudos
+    const ferroUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg';
+    const rivalUrl = buscarEscudo(r.rival);
+    try {
+      const [ferroImg, rivalImg] = await Promise.all([
+        cargarImagen(ferroUrl),
+        rivalUrl ? cargarImagen(rivalUrl) : Promise.resolve(null),
+      ]);
+      ctx.drawImage(ferroImg, 130, 160, 220, 220);
+      if (rivalImg) ctx.drawImage(rivalImg, 550, 160, 220, 220);
+    } catch {
+      // si algún escudo no carga (CORS, sin conexión, etc.), seguimos sin imagen
+    }
+
+    // Marcador
+    ctx.fillStyle = '#f1ecdd';
+    ctx.font = '900 160px sans-serif';
+    ctx.fillText(r.score, 450, 560);
+
+    // Nombres
+    ctx.font = '600 34px sans-serif';
+    ctx.fillText('FERRO', 240, 630);
+    ctx.fillText(r.rival.toUpperCase(), 660, 630);
+
+    // Fecha y resultado
+    ctx.fillStyle = colorResultado;
+    ctx.font = '700 30px monospace';
+    const textoResultado = letra === 'g' ? 'VICTORIA' : letra === 'p' ? 'DERROTA' : 'EMPATE';
+    ctx.fillText(`${textoResultado} · ${r.date}`, 450, 720);
+
+    // Pie de marca
+    ctx.fillStyle = 'rgba(241,236,221,0.5)';
+    ctx.font = '400 22px monospace';
+    ctx.fillText('Ferro Carril Oeste · Caballito', 450, 820);
+
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], 'ferro-resultado.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Resultado de Ferro',
+          text: `Ferro ${r.score} ${r.rival}`,
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ferro-resultado.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      btn.textContent = textoOriginal;
+      btn.disabled = false;
+    }, 'image/png');
+  } catch (err) {
+    console.warn('No se pudo compartir el resultado:', err);
+    btn.textContent = textoOriginal;
+    btn.disabled = false;
+  }
 }
 
 // El "score" siempre viene como "goles de Ferro - goles del rival" (así lo
