@@ -567,9 +567,9 @@ const CREST_MAP = {
   'deportivo madryn': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Social%20y%20Deportivo%20Madryn.svg',
   'racing': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Racing%20de%20C%C3%B3rdoba.svg',
   'racing cordoba': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Racing%20de%20C%C3%B3rdoba.svg',
-  'atletico rafaela': 'https://es.wikipedia.org/wiki/Special:FilePath/Logotipo%20Oficial%20y%20Escudo%20del%20Club%20Atl%C3%A9tico%20de%20Rafaela.svg',
-  'san martin tucuman': 'https://es.wikipedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20San%20Martin%20de%20Tucum%C3%A1n.svg',
-  'san martin san juan': 'https://es.wikipedia.org/wiki/Special:FilePath/Escudo%20de%20San%20Martin%20de%20San%20Juan.svg',
+  'atletico rafaela': 'https://commons.wikimedia.org/wiki/Special:FilePath/Logotipo%20Oficial%20y%20Escudo%20del%20Club%20Atl%C3%A9tico%20de%20Rafaela.svg',
+  'san martin tucuman': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20San%20Martin%20de%20Tucum%C3%A1n.svg',
+  'san martin san juan': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20San%20Martin%20de%20San%20Juan.svg',
   // Cuarta pasada (busqueda exhaustiva)
   'midland': 'https://commons.wikimedia.org/wiki/Special:FilePath/Midland%20escudo.png',
   'acassuso': 'https://es.wikipedia.org/wiki/Special:FilePath/Club%20acassuso%20logo.png',
@@ -885,7 +885,12 @@ function renderHistoricSquads(){
 // comas de cada línea) como en el plantel actual, sin distinguir mayúsculas
 // ni acentos.
 function normalizar(str){
-  return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  return (str || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // saca acentos
+    .toLowerCase()
+    .replace(/[().,]/g, ' ') // saca paréntesis y puntuación (ej. "San Martín (Tucumán)")
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function buscarJugadores(query){
