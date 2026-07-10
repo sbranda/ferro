@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ferro-pwa-v14';
+const CACHE_NAME = 'ferro-pwa-v15';
 
 // App shell: mismo origen que la PWA.
 const APP_SHELL = [
@@ -47,9 +47,9 @@ const CROSS_ORIGIN_ASSETS = [
   'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Almagro.svg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Social%20y%20Deportivo%20Madryn.svg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Racing%20de%20C%C3%B3rdoba.svg',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Logotipo%20Oficial%20y%20Escudo%20del%20Club%20Atl%C3%A9tico%20de%20Rafaela.svg',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20San%20Martin%20de%20Tucum%C3%A1n.svg',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20de%20San%20Martin%20de%20San%20Juan.svg',
+  'https://es.wikipedia.org/wiki/Special:FilePath/Logotipo%20Oficial%20y%20Escudo%20del%20Club%20Atl%C3%A9tico%20de%20Rafaela.svg',
+  'https://es.wikipedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20San%20Martin%20de%20Tucum%C3%A1n.svg',
+  'https://es.wikipedia.org/wiki/Special:FilePath/Escudo%20de%20San%20Martin%20de%20San%20Juan.svg',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Midland%20escudo.png',
   'https://es.wikipedia.org/wiki/Special:FilePath/Club%20acassuso%20logo.png',
   'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Deportivo%20Maipu.svg',
