@@ -212,6 +212,20 @@
   .standings-table td{text-align:center; padding:0.45rem 0.3rem; border-bottom:1px solid rgba(241,236,221,0.08);}
   .standings-table tr.me{background:rgba(46,158,99,0.15);}
   .standings-table tr.me td{color:var(--paper); font-weight:600;}
+  .comparador{margin-top:2.4rem; border-top:1px solid var(--line); padding-top:1.6rem;}
+  .comparador-selects{display:flex; align-items:center; gap:0.8rem; margin-top:0.8rem; flex-wrap:wrap;}
+  .comparador-selects select{
+    flex:1 1 160px; background:var(--bg); color:var(--paper); border:1px solid var(--verde-nilo);
+    padding:0.6rem 0.7rem; font-size:0.85rem; font-family:'IBM Plex Mono', monospace;
+  }
+  .comparador-vs{color:var(--brass); font-size:0.8rem;}
+  .comp-table{width:100%; border-collapse:collapse; margin-top:1.2rem; font-size:0.85rem;}
+  .comp-table th{font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color:var(--verde-bright); text-transform:uppercase; padding:0.4rem; border-bottom:1px solid var(--line); text-align:center;}
+  .comp-table td{padding:0.5rem 0.4rem; text-align:center; border-bottom:1px solid rgba(241,236,221,0.08);}
+  .comp-table td.stat-label{text-align:left; color:var(--verde-bright); font-family:'IBM Plex Mono', monospace; font-size:0.72rem; text-transform:uppercase;}
+  .comp-table .team-header{display:flex; flex-direction:column; align-items:center; gap:0.4rem;}
+  .comp-table .team-header .name{font-size:0.78rem; max-width:110px;}
+  .comp-table td.better{color:var(--verde-bright); font-weight:700;}
   .standings-table .team-cell{display:flex; align-items:center; gap:0.4rem; text-align:left;}
   .visit-card .label{color:var(--brass); font-size:0.78rem; text-transform:uppercase; margin-top:1rem;}
 
@@ -365,6 +379,16 @@
     <div id="standings-wrap" style="display:none; margin-top:1rem;">
       <div id="standings-table-wrap-A"></div>
       <div id="standings-table-wrap-B" style="margin-top:2rem;"></div>
+
+      <div class="comparador">
+        <div class="eyebrow mono">Comparador rápido</div>
+        <div class="comparador-selects">
+          <select id="comp-equipo-a" class="mono"><option value="">Elegí un equipo…</option></select>
+          <span class="mono comparador-vs">vs</span>
+          <select id="comp-equipo-b" class="mono"><option value="">Elegí un equipo…</option></select>
+        </div>
+        <div id="comparador-resultado"></div>
+      </div>
     </div>
   </section>
 
@@ -1210,6 +1234,9 @@ function renderStandings(data, zona){
     <p class="mono" style="font-size:0.72rem; opacity:0.5; margin-top:0.8rem;">Fuente: Wikipedia · actualizado ${new Date(data.actualizado).toLocaleString('es-AR')} · puede estar algo atrasada respecto al último resultado</p>`;
 }
 
+// Guarda los equipos de cada zona una vez cargados, para el comparador rápido.
+const equiposPorZona = { A: [], B: [] };
+
 async function loadZona(zona){
   const wrap = document.getElementById(`standings-table-wrap-${zona}`);
   wrap.innerHTML = `<p class="mono" style="font-size:0.8rem; opacity:0.55;">Cargando tabla de la Zona ${zona}…</p>`;
@@ -1218,6 +1245,8 @@ async function loadZona(zona){
     if (!resp.ok) throw new Error('respuesta no OK');
     const data = await resp.json();
     renderStandings(data, zona);
+    equiposPorZona[zona] = data.equipos || [];
+    poblarComparador();
   } catch (err) {
     console.warn(`No se pudo traer la tabla de la Zona ${zona}:`, err);
     wrap.innerHTML = `
@@ -1231,6 +1260,71 @@ async function loadStandings(){
   await loadZona('B');
   standingsLoaded = true;
 }
+
+// ---------- COMPARADOR RÁPIDO ----------
+function poblarComparador(){
+  const todos = [...equiposPorZona.A, ...equiposPorZona.B];
+  if (!todos.length) return;
+  const opciones = todos
+    .map((e, i) => `<option value="${i}">${e.equipo}</option>`)
+    .join('');
+  ['comp-equipo-a', 'comp-equipo-b'].forEach(id => {
+    const select = document.getElementById(id);
+    const actual = select.value;
+    select.innerHTML = `<option value="">Elegí un equipo…</option>${opciones}`;
+    if (actual) select.value = actual;
+  });
+}
+
+function renderComparador(){
+  const wrap = document.getElementById('comparador-resultado');
+  const idxA = document.getElementById('comp-equipo-a').value;
+  const idxB = document.getElementById('comp-equipo-b').value;
+  if (idxA === '' || idxB === '') { wrap.innerHTML = ''; return; }
+
+  const todos = [...equiposPorZona.A, ...equiposPorZona.B];
+  const a = todos[Number(idxA)];
+  const b = todos[Number(idxB)];
+  if (!a || !b) { wrap.innerHTML = ''; return; }
+
+  const stats = [
+    { label: 'Posición', a: a.pos, b: b.pos, menorGana: true },
+    { label: 'PJ', a: a.jugados, b: b.jugados },
+    { label: 'Ganados', a: a.ganados, b: b.ganados },
+    { label: 'Empatados', a: a.empatados, b: b.empatados },
+    { label: 'Perdidos', a: a.perdidos, b: b.perdidos, menorGana: true },
+    { label: 'GF', a: a.gf, b: b.gf },
+    { label: 'GC', a: a.gc, b: b.gc, menorGana: true },
+    { label: 'Dif', a: a.dif, b: b.dif },
+    { label: 'Puntos', a: a.pts, b: b.pts },
+  ];
+
+  const filas = stats.map(s => {
+    const aGana = s.menorGana ? s.a < s.b : s.a > s.b;
+    const bGana = s.menorGana ? s.b < s.a : s.b > s.a;
+    return `
+      <tr>
+        <td class="stat-label">${s.label}</td>
+        <td class="${aGana ? 'better' : ''}">${s.a ?? '—'}</td>
+        <td class="${bGana ? 'better' : ''}">${s.b ?? '—'}</td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th><div class="team-header">${escudoHtml(a.equipo, 32)}<span class="name">${a.equipo}</span></div></th>
+          <th><div class="team-header">${escudoHtml(b.equipo, 32)}<span class="name">${b.equipo}</span></div></th>
+        </tr>
+      </thead>
+      <tbody>${filas}</tbody>
+    </table>`;
+}
+
+document.getElementById('comp-equipo-a').addEventListener('change', renderComparador);
+document.getElementById('comp-equipo-b').addEventListener('change', renderComparador);
 
 document.getElementById('toggle-standings').addEventListener('click', (e) => {
   const wrap = document.getElementById('standings-wrap');
