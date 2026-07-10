@@ -132,6 +132,19 @@
   .jugador-hit .nombre{font-weight:600;}
   .jugador-hit .contexto{font-size:0.78rem; color:var(--verde-bright); font-family:'IBM Plex Mono', monospace;}
   .jugador-sin{font-size:0.85rem; opacity:0.6; margin-bottom:1rem;}
+  .trivia-card{border:1px solid var(--verde-nilo); padding:1.2rem; margin-top:1rem;}
+  .trivia-score{font-size:0.75rem; color:var(--brass); margin-bottom:0.8rem;}
+  .trivia-pregunta{font-size:1.05rem; margin-bottom:1rem;}
+  .trivia-opciones{display:flex; flex-direction:column; gap:0.5rem;}
+  .trivia-opcion{
+    background:transparent; border:1px solid rgba(241,236,221,0.25); color:var(--paper);
+    padding:0.7rem 0.9rem; text-align:left; font-size:0.9rem; cursor:pointer; border-radius:2px;
+  }
+  .trivia-opcion:hover:not(:disabled){border-color:var(--verde-bright);}
+  .trivia-opcion.correcta{background:rgba(46,158,99,0.2); border-color:var(--verde-bright); color:var(--verde-bright);}
+  .trivia-opcion.incorrecta{background:rgba(156,74,43,0.2); border-color:#9c4a2b; color:#d98a6a;}
+  .trivia-opcion:disabled{cursor:default;}
+  .trivia-siguiente{margin-top:1rem; background:var(--verde-nilo); color:var(--paper); border:none; padding:0.6rem 1rem; font-family:'IBM Plex Mono', monospace; font-size:0.82rem; cursor:pointer;}
   .filterbtn{padding:0.5rem 1rem; font-size:0.8rem; border:1px solid var(--verde-nilo); color:var(--verde-bright);}
   .filterbtn.active{background:var(--verde-nilo); color:var(--paper);}
   .squadgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:0.7rem;}
@@ -307,6 +320,10 @@
         <p class="mono" style="font-size:0.72rem; opacity:0.55; margin-top:0.4rem;">1930 — la sede social de Caballito</p>
       </div>
     </div>
+
+    <div class="eyebrow mono" style="margin-top:2.2rem;">Trivia</div>
+    <h2 class="disp" style="font-size:1.4rem;">¿Cuánto sabés de Ferro?</h2>
+    <div id="trivia-wrap"></div>
   </section>
 
   <section id="tab-identidad">
@@ -551,6 +568,25 @@ function escudoHtml(nombre, size){
 
 const NICKNAMES = ["Verdolagas", "Ferroviarios", "Tren Verde", "La Locomotora del Oeste", "El Rápido", "El Expreso"];
 
+// Preguntas de trivia, armadas con los mismos datos de TIMELINE/EFEMERIDES/
+// HISTORIC_SQUADS que ya usamos en el resto de la app.
+const TRIVIA = [
+  { pregunta: "¿En qué año se fundó Ferro Carril Oeste?", opciones: ["1898", "1904", "1912", "1921"], correcta: 1 },
+  { pregunta: "¿En qué año se inauguró el estadio de Caballito?", opciones: ["1905", "1918", "1930", "1945"], correcta: 0 },
+  { pregunta: "¿En qué año Ferro adoptó definitivamente el verde nilo?", opciones: ["1904", "1907", "1910", "1925"], correcta: 2 },
+  { pregunta: "¿En qué año fue el primer título de Primera División de Ferro?", opciones: ["1978", "1982", "1984", "1990"], correcta: 1 },
+  { pregunta: "¿A quién le ganó Ferro la final del Nacional 1982?", opciones: ["Boca Juniors", "River Plate", "Quilmes", "Vélez Sarsfield"], correcta: 2 },
+  { pregunta: "¿Quién fue el DT campeón de Ferro en 1982 y 1984?", opciones: ["César Luis Menotti", "Carlos Timoteo Griguol", "Carlos Bilardo", "Ángel Cappa"], correcta: 1 },
+  { pregunta: "¿Cómo se conoce a la delantera de Ferro de 1937-38?", opciones: ["Los Cinco Mosqueteros", "La Máquina", "Los Invencibles", "El Escuadrón"], correcta: 0 },
+  { pregunta: "¿Contra quién debutó Ferro en 1904?", opciones: ["River Plate", "Flores AC", "Boca Juniors", "Estudiantes"], correcta: 1 },
+  { pregunta: "¿En qué año Ferro le ganó por primera vez a Boca Juniors?", opciones: ["1908", "1912", "1920", "1935"], correcta: 1 },
+  { pregunta: "¿Cómo se llama el estadio de Ferro?", opciones: ["José Amalfitani", "Arquitecto Ricardo Etcheverry", "Julio Humberto Grondona", "Presbítero Bartolomé Grella"], correcta: 1 },
+  { pregunta: "¿En qué barrio de Buenos Aires está Ferro?", opciones: ["Flores", "Caballito", "Once", "Floresta"], correcta: 1 },
+  { pregunta: "¿Cuántos títulos de Primera División tiene Ferro?", opciones: ["Uno", "Dos", "Tres", "Ninguno"], correcta: 1 },
+  { pregunta: "¿Quién fue el primer verdolaga en jugar para la Selección Argentina?", opciones: ["Santiago Sayanes", "Gerónimo Saccardi", "Carlos Barisio", "Alberto Márcico"], correcta: 0 },
+  { pregunta: "¿Cuál de estos NO es un apodo de Ferro?", opciones: ["Tren Verde", "El Rápido", "La Locomotora del Oeste", "El Fortín"], correcta: 3 },
+];
+
 const HISTORIC_SQUADS = [
   { year:"1904", title:"El primer equipo",
     context:"Debut oficioso del club, derrota 3-1 ante Flores AC el 4 de septiembre de 1904, apenas un mes después de la fundación.",
@@ -674,6 +710,66 @@ function diaDelAnio(dia, mes){
   return new Date(2001, mes - 1, dia).getTime(); // año arbitrario fijo, solo para ordenar
 }
 
+
+// ---------- TRIVIA DEL CLUB ----------
+let triviaOrden = [];
+let triviaIdx = 0;
+let triviaAciertos = 0;
+let triviaRespondidas = 0;
+
+function mezclarTrivia(){
+  triviaOrden = TRIVIA.map((_, i) => i).sort(() => Math.random() - 0.5);
+  triviaIdx = 0;
+  triviaAciertos = 0;
+  triviaRespondidas = 0;
+}
+
+function renderTrivia(){
+  const wrap = document.getElementById('trivia-wrap');
+  if (!wrap) return;
+  if (!triviaOrden.length) mezclarTrivia();
+
+  if (triviaIdx >= triviaOrden.length) {
+    wrap.innerHTML = `
+      <div class="trivia-card">
+        <div class="trivia-pregunta">¡Completaste la trivia! Acertaste ${triviaAciertos} de ${triviaOrden.length}.</div>
+        <button class="trivia-siguiente mono" id="trivia-reiniciar">Jugar de nuevo</button>
+      </div>`;
+    document.getElementById('trivia-reiniciar').addEventListener('click', () => { mezclarTrivia(); renderTrivia(); });
+    return;
+  }
+
+  const q = TRIVIA[triviaOrden[triviaIdx]];
+  const opciones = q.opciones.map((op, i) =>
+    `<button class="trivia-opcion" data-i="${i}">${op}</button>`
+  ).join('');
+
+  wrap.innerHTML = `
+    <div class="trivia-card">
+      <div class="trivia-score mono">Pregunta ${triviaIdx + 1} de ${triviaOrden.length} · Aciertos: ${triviaAciertos}</div>
+      <div class="trivia-pregunta">${q.pregunta}</div>
+      <div class="trivia-opciones">${opciones}</div>
+    </div>`;
+
+  wrap.querySelectorAll('.trivia-opcion').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const elegida = Number(btn.dataset.i);
+      wrap.querySelectorAll('.trivia-opcion').forEach(b => {
+        b.disabled = true;
+        if (Number(b.dataset.i) === q.correcta) b.classList.add('correcta');
+      });
+      if (elegida !== q.correcta) btn.classList.add('incorrecta');
+      else triviaAciertos++;
+      triviaRespondidas++;
+
+      const siguiente = document.createElement('button');
+      siguiente.className = 'trivia-siguiente mono';
+      siguiente.textContent = triviaIdx + 1 < triviaOrden.length ? 'Siguiente →' : 'Ver resultado';
+      siguiente.addEventListener('click', () => { triviaIdx++; renderTrivia(); });
+      wrap.querySelector('.trivia-card').appendChild(siguiente);
+    });
+  });
+}
 
 function renderTimeline(){
   const el = document.getElementById('timeline');
@@ -1588,6 +1684,7 @@ document.querySelectorAll('.tabbtn').forEach(btn => {
 });
 
 renderEfemeride();
+renderTrivia();
 renderTimeline();
 renderNicknames();
 renderHistoricSquads();
