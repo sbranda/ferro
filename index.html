@@ -171,6 +171,7 @@
     border:1px solid var(--line); padding:0.8rem 1rem; margin-bottom:0.5rem;
   }
   .rival-card .info .name{font-weight:600;}
+  .rival-card .info .apodo{font-size:0.75rem; color:var(--brass); cursor:help; margin-top:0.1rem;}
   .rival-card .info .when{font-size:0.78rem; color:rgba(241,236,221,0.65); margin-top:0.15rem;}
   .rival-btn{
     font-size:0.75rem; text-decoration:none; color:var(--verde-bright);
@@ -494,6 +495,33 @@ const TIMELINE = [
 // normalizado (sin acentos, minúscula). Todavía no tengo la URL de los 36
 // equipos completos — para los que faltan, se muestra un círculo con las
 // iniciales en vez de romper la imagen. Se puede ampliar con el tiempo.
+// Apodos de rivales y su origen, verificados (no son todos los 36 equipos —
+// solo los que tienen un origen bien documentado). Por nombre normalizado.
+const APODOS_RIVALES = {
+  'colon': { apodo: 'El Sabalero', origen: 'Por los pescadores que vendían sábalo cerca del club, a orillas del río, a principios del siglo XX.' },
+  'deportivo moron': { apodo: 'El Gallo', origen: 'Apodo tradicional del club, ligado a su escudo e identidad histórica.' },
+  'moron': { apodo: 'El Gallo', origen: 'Apodo tradicional del club, ligado a su escudo e identidad histórica.' },
+  'godoy cruz': { apodo: 'El Bodeguero', origen: 'Por la tradición vitivinícola de Mendoza, la provincia del club.' },
+  'san miguel': { apodo: 'El Trueno Verde', origen: 'Apodo histórico del club, por su camiseta verde.' },
+  'defensores de belgrano': { apodo: 'El Dragón', origen: 'Apodo tradicional del club de Barracas.' },
+  'acassuso': { apodo: 'El Quemero', origen: 'Por la zona de quemas de basura que existía cerca del club, en Boulogne.' },
+  'all boys': { apodo: 'El Albo', origen: 'Por el blanco de su camiseta.' },
+  'san telmo': { apodo: 'El Candombero', origen: 'Por la tradición afroargentina del barrio porteño de San Telmo, cuna del candombe.' },
+  'los andes': { apodo: 'Los Milrayitas', origen: 'Por las finas rayas verticales de su camiseta.' },
+  'almirante brown': { apodo: 'La Fragata', origen: 'En honor al almirante Guillermo Brown, marino que da nombre al club.' },
+  'almagro': { apodo: 'El Tricolor', origen: 'Por los tres colores de su camiseta.' },
+  'atlanta': { apodo: 'El Bohemio', origen: 'Por las varias mudanzas del club antes de asentarse en Villa Crespo en 1922.' },
+  'quilmes': { apodo: 'El Cervecero', origen: 'Por la cervecería Quilmes, fundada en la misma ciudad pocos años después del club.' },
+  'chacarita': { apodo: 'El Funebrero', origen: 'Porque en sus inicios muchos socios eran empleados del cercano cementerio de la Chacarita; hasta el negro de la camiseta viene de ahí.' },
+  'chacarita juniors': { apodo: 'El Funebrero', origen: 'Porque en sus inicios muchos socios eran empleados del cercano cementerio de la Chacarita; hasta el negro de la camiseta viene de ahí.' },
+  'nueva chicago': { apodo: 'El Torito', origen: 'Apodo tradicional del club del barrio de Mataderos.' },
+  'gimnasia jujuy': { apodo: 'El Lobo', origen: 'Apodo tradicional del club jujeño.' },
+  'gimnasia y esgrima': { apodo: 'El Lobo', origen: 'Apodo tradicional del club jujeño.' },
+  'tristan suarez': { apodo: 'El Lechero', origen: 'Por la actividad tambera de la zona de Tristán Suárez a principios del siglo XX.' },
+  'patronato': { apodo: 'El Santo / El Patrón', origen: 'Por su nombre completo, "Patronato de la Juventud Católica".' },
+  'temperley': { apodo: 'El Celeste', origen: 'Por el color de su camiseta.' },
+};
+
 const CREST_MAP = {
   // Ferro (agregado acá también para que escudoHtml() lo resuelva en
   // cualquier lugar, no solo donde había un caso especial a mano)
@@ -1284,6 +1312,15 @@ function chequearPrediccion(){
 // fuente confiable para scrapear ese historial, así que en vez de mostrar
 // datos que se pueden desactualizar o romper, dejamos que cada uno abra
 // resultados reales y actuales cuando lo necesite.
+// Mismo criterio flexible que buscarEscudo, para no depender de que el
+// nombre venga escrito exactamente igual.
+function buscarApodo(nombre){
+  const n = normalizar(nombre);
+  if (APODOS_RIVALES[n]) return APODOS_RIVALES[n];
+  const key = Object.keys(APODOS_RIVALES).find(k => n.includes(k) || k.includes(n));
+  return key ? APODOS_RIVALES[key] : null;
+}
+
 function renderRivales(){
   const wrap = document.getElementById('rivales-wrap');
   if (!wrap) return;
@@ -1294,12 +1331,17 @@ function renderRivales(){
     const query = encodeURIComponent(`Ferro Carril Oeste vs ${p.rival} historial enfrentamientos`);
     const url = `https://www.google.com/search?q=${query}`;
     const condLabel = p.condicion === 'L' ? 'Local' : 'Visitante';
+    const apodoInfo = buscarApodo(p.rival);
+    const apodoHtml = apodoInfo
+      ? `<div class="apodo mono" title="${apodoInfo.origen}">${apodoInfo.apodo} ℹ️</div>`
+      : '';
     return `
       <div class="rival-card">
         <div class="info" style="display:flex; align-items:center; gap:0.7rem;">
           ${escudoHtml(p.rival, 32)}
           <div>
             <div class="name">${p.rival}</div>
+            ${apodoHtml}
             <div class="when mono">${p.dia}${p.dato ? ' · ' + p.dato : ''} · ${condLabel}</div>
           </div>
         </div>
