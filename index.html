@@ -171,11 +171,12 @@
   .proximo{border:1px solid var(--brass); background:rgba(201,160,74,0.08); padding:1rem 1.2rem; margin-bottom:1.2rem;}
   .racha{margin-bottom:1.4rem;}
   .compartir-btn{
-    display:flex; align-items:center; gap:0.5rem; margin-bottom:1.4rem;
+    display:inline-flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;
     background:var(--verde-nilo); color:var(--paper); border:none;
     padding:0.6rem 1rem; font-family:'IBM Plex Mono', monospace; font-size:0.82rem; cursor:pointer;
   }
   .compartir-btn:hover{background:var(--verde-bright); color:var(--bg);}
+  #compartir-wrap{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.8rem;}
   .rivales{margin-top:1.8rem;}
   .rivales .label{font-size:0.72rem; color:var(--verde-bright); text-transform:uppercase; margin-bottom:0.6rem;}
   .rival-card{
@@ -1148,8 +1149,11 @@ function renderCompartir(){
   const wrap = document.getElementById('compartir-wrap');
   if (!wrap) return;
   if (!RESULTS.length) { wrap.innerHTML = ''; return; }
-  wrap.innerHTML = `<button class="compartir-btn mono" id="compartir-btn">📤 Compartir último resultado</button>`;
+  wrap.innerHTML = `
+    <button class="compartir-btn mono" id="compartir-btn">📤 Compartir último resultado</button>
+    <button class="compartir-btn mono" id="resumen-btn" style="margin-left:0.6rem;">📊 Resumen de temporada</button>`;
   document.getElementById('compartir-btn').addEventListener('click', compartirResultado);
+  document.getElementById('resumen-btn').addEventListener('click', compartirResumenTemporada);
 }
 
 function cargarImagen(src){
@@ -1247,6 +1251,128 @@ async function compartirResultado(){
     }, 'image/png');
   } catch (err) {
     console.warn('No se pudo compartir el resultado:', err);
+    btn.textContent = textoOriginal;
+    btn.disabled = false;
+  }
+}
+
+// ---------- RESUMEN DE TEMPORADA ----------
+// Trae la fila de Ferro en la tabla de la Zona A (posición, PJ, G, E, P,
+// goles) y arma una tarjeta resumen con eso más la racha reciente, usando la
+// misma técnica de <canvas> que "compartir resultado".
+async function compartirResumenTemporada(){
+  const btn = document.getElementById('resumen-btn');
+  const textoOriginal = btn.textContent;
+  btn.textContent = 'Armando resumen…';
+  btn.disabled = true;
+
+  try {
+    let ferroRow = equiposPorZona.A.find(e => /ferro\s*carril\s*oeste/i.test(e.equipo));
+    if (!ferroRow) {
+      const resp = await fetch(`${WORKER_BASE}/standings?zona=A`, { cache: 'no-store' });
+      if (resp.ok) {
+        const data = await resp.json();
+        ferroRow = (data.equipos || []).find(e => /ferro\s*carril\s*oeste/i.test(e.equipo));
+      }
+    }
+    if (!ferroRow) throw new Error('No se pudo obtener la posición de Ferro en la tabla');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 900;
+    canvas.height = 1000;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#0d1f16';
+    ctx.fillRect(0, 0, 900, 1000);
+    ctx.strokeStyle = '#2e9e63';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(20, 20, 860, 960);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#2e9e63';
+    ctx.font = '600 26px monospace';
+    ctx.fillText('RESUMEN DE TEMPORADA · PRIMERA NACIONAL', 450, 100);
+
+    try {
+      const ferroImg = await cargarImagen('https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_del_Club_Ferro_Carril_Oeste.svg');
+      ctx.drawImage(ferroImg, 350, 130, 200, 200);
+    } catch { /* seguimos sin el escudo si no carga */ }
+
+    ctx.fillStyle = '#f1ecdd';
+    ctx.font = '900 90px sans-serif';
+    ctx.fillText(`${ferroRow.pos}°`, 450, 440);
+    ctx.font = '600 30px sans-serif';
+    ctx.fillText('EN LA ZONA A', 450, 480);
+
+    // Fila de estadísticas
+    const stats = [
+      { label: 'PJ', val: ferroRow.jugados },
+      { label: 'G', val: ferroRow.ganados },
+      { label: 'E', val: ferroRow.empatados },
+      { label: 'P', val: ferroRow.perdidos },
+      { label: 'GF', val: ferroRow.gf },
+      { label: 'GC', val: ferroRow.gc },
+      { label: 'PTS', val: ferroRow.pts },
+    ];
+    const startX = 130;
+    const gap = (900 - 260) / (stats.length - 1);
+    stats.forEach((s, i) => {
+      const x = startX + i * gap;
+      ctx.fillStyle = '#f1ecdd';
+      ctx.font = '700 40px monospace';
+      ctx.fillText(String(s.val), x, 580);
+      ctx.fillStyle = '#2e9e63';
+      ctx.font = '600 20px monospace';
+      ctx.fillText(s.label, x, 610);
+    });
+
+    // Racha reciente (últimos resultados disponibles)
+    ctx.fillStyle = '#c9a04a';
+    ctx.font = '600 24px monospace';
+    ctx.fillText('RACHA RECIENTE', 450, 690);
+
+    const ultimos = RESULTS.slice(0, 5).reverse();
+    const colores = { g: '#2e9e63', e: '#c9a04a', p: '#9c4a2b' };
+    const labels = { g: 'G', e: 'E', p: 'P' };
+    const totalW = ultimos.length * 90;
+    const startCx = 450 - totalW / 2 + 45;
+    ultimos.forEach((r, i) => {
+      const letra = resultLetter(r.score);
+      const cx = startCx + i * 90;
+      ctx.beginPath();
+      ctx.arc(cx, 750, 35, 0, Math.PI * 2);
+      ctx.fillStyle = colores[letra] || '#666';
+      ctx.fill();
+      ctx.fillStyle = letra === 'p' ? '#f1ecdd' : '#0d1f16';
+      ctx.font = '700 30px sans-serif';
+      ctx.fillText(labels[letra] || '?', cx, 761);
+    });
+
+    ctx.fillStyle = 'rgba(241,236,221,0.5)';
+    ctx.font = '400 20px monospace';
+    ctx.fillText('Ferro Carril Oeste · Caballito', 450, 900);
+
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], 'ferro-resumen-temporada.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Resumen de temporada de Ferro',
+          text: `Ferro está ${ferroRow.pos}° en la Zona A con ${ferroRow.pts} puntos`,
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ferro-resumen-temporada.png';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      btn.textContent = textoOriginal;
+      btn.disabled = false;
+    }, 'image/png');
+  } catch (err) {
+    console.warn('No se pudo armar el resumen de temporada:', err);
     btn.textContent = textoOriginal;
     btn.disabled = false;
   }
