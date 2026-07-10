@@ -129,6 +129,14 @@
     border:1px solid var(--line); padding:0.7rem 0.9rem; margin-bottom:0.5rem;
     display:flex; justify-content:space-between; align-items:center; gap:0.8rem; flex-wrap:wrap;
   }
+  .bg-categoria{font-size:0.7rem; color:var(--brass); text-transform:uppercase; margin:1.2rem 0 0.5rem; font-family:'IBM Plex Mono', monospace;}
+  .bg-categoria:first-child{margin-top:0;}
+  .bg-hit{
+    border:1px solid var(--line); padding:0.8rem 1rem; margin-bottom:0.5rem; cursor:pointer;
+  }
+  .bg-hit:hover{border-color:var(--verde-bright); background:rgba(46,158,99,0.06);}
+  .bg-hit .titulo{font-weight:600;}
+  .bg-hit .snippet{font-size:0.82rem; opacity:0.75; margin-top:0.25rem;}
   .jugador-hit .nombre{font-weight:600;}
   .jugador-hit .contexto{font-size:0.78rem; color:var(--verde-bright); font-family:'IBM Plex Mono', monospace;}
   .jugador-sin{font-size:0.85rem; opacity:0.6; margin-bottom:1rem;}
@@ -303,7 +311,19 @@
   <button class="tabbtn mono" data-tab="plantel">Plantel actual</button>
   <button class="tabbtn mono" data-tab="resultados">Resultados</button>
   <button class="tabbtn mono" data-tab="visitanos">Visitanos</button>
+  <button class="mono" id="buscar-global-btn" title="Buscar en toda la app" style="background:transparent; border:1px solid var(--verde-nilo); color:var(--verde-bright); padding:0.5rem 0.8rem; font-size:0.9rem; cursor:pointer;">🔍</button>
 </nav>
+
+<div id="buscar-global-overlay" style="display:none; position:fixed; inset:0; background:rgba(13,31,22,0.97); z-index:100; overflow-y:auto;">
+  <div style="max-width:700px; margin:0 auto; padding:1.5rem;">
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <input type="text" id="buscar-global-input" class="mono" placeholder="Buscar jugadores, rivales, historia, efemérides…" autocomplete="off"
+        style="flex:1; background:transparent; border:1px solid var(--verde-nilo); color:var(--paper); padding:0.8rem 1rem; font-size:1rem;">
+      <button id="buscar-global-cerrar" class="mono" style="background:transparent; border:1px solid rgba(241,236,221,0.3); color:var(--paper); padding:0.8rem 1rem; cursor:pointer;">✕</button>
+    </div>
+    <div id="buscar-global-resultados" style="margin-top:1.5rem;"></div>
+  </div>
+</div>
 
 <main>
 
@@ -1006,6 +1026,85 @@ function renderBusquedaJugadores(query){
 
 document.getElementById('jugador-search').addEventListener('input', (e) => {
   renderBusquedaJugadores(e.target.value);
+});
+
+// ---------- BUSCADOR GLOBAL ----------
+// Revisa todo el contenido de la app: historia, efemérides, planteles
+// históricos, plantel actual, jugadores destacados, DTs y apodos de rivales.
+function buscarGlobal(query){
+  const q = normalizar(query);
+  if (!q) return {};
+
+  const resultados = {};
+
+  const timelineHits = TIMELINE.filter(t => normalizar(t.year + ' ' + t.title + ' ' + t.text).includes(q))
+    .map(t => ({ titulo: `${t.year} — ${t.title}`, snippet: t.text, tab: 'historia' }));
+  if (timelineHits.length) resultados['Historia'] = timelineHits;
+
+  const efemerideHits = EFEMERIDES.filter(e => normalizar(e.anio + ' ' + e.texto).includes(q))
+    .map(e => ({ titulo: `${e.dia}/${e.mes} · ${e.anio}`, snippet: e.texto, tab: 'historia' }));
+  if (efemerideHits.length) resultados['Efemérides'] = efemerideHits;
+
+  const jugadoresHits = buscarJugadores(query)
+    .map(h => ({ titulo: h.nombre, snippet: h.contexto, tab: h.contexto.includes('actual') ? 'plantel' : 'planteles' }));
+  if (jugadoresHits.length) resultados['Jugadores'] = jugadoresHits;
+
+  const dtHits = DTS_HISTORICOS.filter(d => normalizar(d.nombre + ' ' + d.dato).includes(q))
+    .map(d => ({ titulo: d.nombre, snippet: d.dato, tab: 'planteles' }));
+  if (dtHits.length) resultados['Directores técnicos'] = dtHits;
+
+  const apodoHits = Object.entries(APODOS_RIVALES).filter(([k, v]) => normalizar(k + ' ' + v.apodo).includes(q))
+    .map(([k, v]) => ({ titulo: v.apodo, snippet: v.origen, tab: 'resultados' }));
+  if (apodoHits.length) resultados['Rivales y apodos'] = apodoHits;
+
+  return resultados;
+}
+
+function renderBusquedaGlobal(query){
+  const wrap = document.getElementById('buscar-global-resultados');
+  const q = query.trim();
+  if (!q) { wrap.innerHTML = ''; return; }
+
+  const resultados = buscarGlobal(q);
+  const categorias = Object.keys(resultados);
+  if (!categorias.length) {
+    wrap.innerHTML = `<p class="mono" style="opacity:0.6;">No se encontró nada con "${q}".</p>`;
+    return;
+  }
+
+  wrap.innerHTML = categorias.map(cat => `
+    <div class="bg-categoria">${cat}</div>
+    ${resultados[cat].map(r => `
+      <div class="bg-hit" data-tab="${r.tab}">
+        <div class="titulo">${r.titulo}</div>
+        <div class="snippet">${r.snippet.length > 140 ? r.snippet.slice(0, 140) + '…' : r.snippet}</div>
+      </div>`).join('')}
+  `).join('');
+
+  wrap.querySelectorAll('.bg-hit').forEach(el => {
+    el.addEventListener('click', () => {
+      cerrarBusquedaGlobal();
+      const btn = document.querySelector(`.tabbtn[data-tab="${el.dataset.tab}"]`);
+      if (btn) btn.click();
+    });
+  });
+}
+
+function abrirBusquedaGlobal(){
+  document.getElementById('buscar-global-overlay').style.display = 'block';
+  document.getElementById('buscar-global-input').focus();
+}
+function cerrarBusquedaGlobal(){
+  document.getElementById('buscar-global-overlay').style.display = 'none';
+  document.getElementById('buscar-global-input').value = '';
+  document.getElementById('buscar-global-resultados').innerHTML = '';
+}
+
+document.getElementById('buscar-global-btn').addEventListener('click', abrirBusquedaGlobal);
+document.getElementById('buscar-global-cerrar').addEventListener('click', cerrarBusquedaGlobal);
+document.getElementById('buscar-global-input').addEventListener('input', (e) => renderBusquedaGlobal(e.target.value));
+document.getElementById('buscar-global-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'buscar-global-overlay') cerrarBusquedaGlobal();
 });
 
 let squadFilter = 'todos';
