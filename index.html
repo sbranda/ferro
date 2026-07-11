@@ -672,11 +672,14 @@ const CREST_MAP = {
   'deportivo madryn': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Social%20y%20Deportivo%20Madryn.svg',
   'racing': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Racing%20de%20C%C3%B3rdoba.svg',
   'racing cordoba': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20Racing%20de%20C%C3%B3rdoba.svg',
-  // 'atletico rafaela' y 'san martin san juan' quitados temporalmente: el
-  // archivo existe en Wikimedia Commons pero por algún motivo no carga en el
-  // celular del usuario. Caen al respaldo de iniciales hasta encontrar la causa.
+  // Encontrado el bug real: Wikipedia escribe "Atlético de Rafaela" (con
+  // "de", mi clave no lo tenía) y "San Martín (SJ)" abreviado (mi clave tenía
+  // el nombre completo "San Juan"). Ninguna de las dos coincidía como
+  // substring. Corregido con las claves que sí calzan con el texto real.
+  'atletico de rafaela': 'https://commons.wikimedia.org/wiki/Special:FilePath/Logotipo_Oficial_y_Escudo_del_Club_Atl%C3%A9tico_de_Rafaela.svg',
   'san martin tucuman': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo%20del%20Club%20San%20Martin%20de%20Tucum%C3%A1n.svg',
-  // 'san martin san juan' quitado (ver nota arriba junto a Rafaela)
+  'san martin sj': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_de_San_Martin_de_San_Juan.svg',
+  'san martin san juan': 'https://commons.wikimedia.org/wiki/Special:FilePath/Escudo_de_San_Martin_de_San_Juan.svg',
   // Cuarta pasada (busqueda exhaustiva)
   'midland': 'https://commons.wikimedia.org/wiki/Special:FilePath/Midland%20escudo.png',
   'acassuso': 'https://es.wikipedia.org/wiki/Special:FilePath/Club%20acassuso%20logo.png',
