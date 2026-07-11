@@ -486,6 +486,7 @@
       <span>Posición actual en su zona</span>
       <span class="pos mono">1° puesto · 37 pts (tras la fecha 19)</span>
     </div>
+    <div id="fechas-restantes-wrap"></div>
     <div id="racha-wrap"></div>
     <div id="racha-lv-wrap"></div>
     <div id="proximo-wrap"></div>
@@ -1310,6 +1311,43 @@ async function compartirResultado(){
 // Trae la fila de Ferro en la tabla de la Zona A (posición, PJ, G, E, P,
 // goles) y arma una tarjeta resumen con eso más la racha reciente, usando la
 // misma técnica de <canvas> que "compartir resultado".
+// Trae la fila de Ferro en la tabla de la Zona A, reusando lo ya cargado si
+// existe (para el comparador) o pidiéndolo fresco si hace falta.
+async function obtenerFerroEnTabla(){
+  let ferroRow = equiposPorZona.A.find(e => /ferro\s*carril\s*oeste/i.test(e.equipo));
+  if (!ferroRow) {
+    const resp = await fetch(`${WORKER_BASE}/standings?zona=A`, { cache: 'no-store' });
+    if (resp.ok) {
+      const data = await resp.json();
+      ferroRow = (data.equipos || []).find(e => /ferro\s*carril\s*oeste/i.test(e.equipo));
+    }
+  }
+  return ferroRow || null;
+}
+
+// El torneo tiene 36 fechas en total (fase de zonas, ida y vuelta entre 18
+// equipos). El PJ de Ferro en la tabla nos dice en qué fecha estamos, sin
+// necesitar scrapear ese número específico de ningún lado.
+const FECHAS_TOTALES = 36;
+
+async function renderFechasRestantes(){
+  const wrap = document.getElementById('fechas-restantes-wrap');
+  if (!wrap) return;
+  try {
+    const ferroRow = await obtenerFerroEnTabla();
+    if (!ferroRow || ferroRow.jugados == null) { wrap.innerHTML = ''; return; }
+    const restantes = FECHAS_TOTALES - ferroRow.jugados;
+    wrap.innerHTML = `
+      <div class="standing" style="margin-top:0.5rem;">
+        <span>Fechas restantes (fase de zonas)</span>
+        <span class="pos mono">${restantes} de ${FECHAS_TOTALES}</span>
+      </div>`;
+  } catch (err) {
+    console.warn('No se pudo calcular fechas restantes:', err);
+    wrap.innerHTML = '';
+  }
+}
+
 async function compartirResumenTemporada(){
   const btn = document.getElementById('resumen-btn');
   const textoOriginal = btn.textContent;
@@ -1317,14 +1355,7 @@ async function compartirResumenTemporada(){
   btn.disabled = true;
 
   try {
-    let ferroRow = equiposPorZona.A.find(e => /ferro\s*carril\s*oeste/i.test(e.equipo));
-    if (!ferroRow) {
-      const resp = await fetch(`${WORKER_BASE}/standings?zona=A`, { cache: 'no-store' });
-      if (resp.ok) {
-        const data = await resp.json();
-        ferroRow = (data.equipos || []).find(e => /ferro\s*carril\s*oeste/i.test(e.equipo));
-      }
-    }
+    const ferroRow = await obtenerFerroEnTabla();
     if (!ferroRow) throw new Error('No se pudo obtener la posición de Ferro en la tabla');
 
     const canvas = document.createElement('canvas');
@@ -1900,6 +1931,7 @@ async function fetchLiveData(){
       renderProximos();
     }
     chequearPrediccion();
+    renderFechasRestantes();
     if (fuenteEl) {
       const actualizado = data.actualizado ? new Date(data.actualizado).toLocaleString('es-AR') : '';
       fuenteEl.textContent = `Datos en vivo desde Promiedos · actualizado ${actualizado}`;
